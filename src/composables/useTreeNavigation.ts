@@ -3,11 +3,22 @@ import { useAppStore } from '../stores/appStore';
 import { useTreeStore } from '../stores/treeStore';
 import { TreeTraversal } from '../utils/tree-traversal';
 
-export function useTreeNavigation(containerRef: Ref<HTMLElement | null>) {
+export function useTreeNavigation(
+  containerRef: Ref<HTMLElement | null>,
+  options: {
+    onNavigate?: (path: string) => void;
+    nodes?: Ref<any[]>;
+  } = {}
+) {
   const appStore = useAppStore();
   const treeStore = useTreeStore();
 
   const scrollToNode = (path: string) => {
+    if (options.onNavigate) {
+      options.onNavigate(path);
+      return;
+    }
+
     // Ждем следующего тика, чтобы DOM обновился (если узел только что развернулся)
     setTimeout(() => {
       const element = containerRef.value?.querySelector(`[data-path="${path}"]`);
@@ -23,7 +34,7 @@ export function useTreeNavigation(containerRef: Ref<HTMLElement | null>) {
       return;
     }
 
-    const visibleNodes = TreeTraversal.getVisibleNodes(appStore.parsedData, treeStore.expandedNodes);
+    const visibleNodes = options.nodes?.value || TreeTraversal.getVisibleNodes(appStore.filteredData, treeStore.expandedNodes);
     if (visibleNodes.length === 0) return;
 
     const currentIndex = visibleNodes.findIndex(n => n.path === treeStore.selectedPath);

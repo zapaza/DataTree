@@ -7,10 +7,15 @@
     </div>
 
     <!-- Список -->
-    <div v-if="hasData && !appStore.isParsing" class="flex-1 min-h-0 flex flex-col relative dark:bg-[#1e1e1e]">
+    <div
+      v-if="hasData && !appStore.isParsing"
+      ref="treeContainer"
+      class="flex-1 min-h-0 flex flex-col relative dark:bg-[#1e1e1e] outline-none"
+      tabindex="0"
+    >
       <RecycleScroller
         ref="scroller"
-        class="flex-1 min-h-0 px-2 custom-scrollbar outline-none"
+        class="flex-1 min-h-0 px-2 custom-scrollbar"
         :items="flatList"
         :item-size="24"
         key-field="path"
@@ -48,6 +53,7 @@ import { computed, ref, watch } from 'vue';
 import { useAppStore } from '@/stores/appStore';
 import { useTreeStore } from '@/stores/treeStore';
 import { useVirtualTree } from '@/composables/useVirtualTree';
+import { useTreeNavigation } from '@/composables/useTreeNavigation';
 import VirtualTreeNode from './VirtualTreeNode.vue';
 import TreeSearch from './TreeSearch.vue';
 import TreeFilters from './TreeFilters.vue';
@@ -55,11 +61,23 @@ import TreeFilters from './TreeFilters.vue';
 const appStore = useAppStore();
 const treeStore = useTreeStore();
 const scroller = ref<any>(null);
+const treeContainer = ref<HTMLElement | null>(null);
 
 const parsedData = computed(() => appStore.filteredData);
 const hasData = computed(() => !!parsedData.value);
 
 const { flatList } = useVirtualTree(parsedData);
+
+// Инициализируем навигацию с клавиатуры
+useTreeNavigation(treeContainer, {
+  nodes: flatList,
+  onNavigate: (path) => {
+    const index = flatList.value.findIndex(item => item.path === path);
+    if (index !== -1 && scroller.value) {
+      scroller.value.scrollToItem(index);
+    }
+  }
+});
 
 watch(() => treeStore.currentSearchIndex, (index) => {
   if (index !== -1 && treeStore.searchResults[index]) {

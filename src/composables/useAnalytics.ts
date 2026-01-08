@@ -13,10 +13,9 @@ export default function useAnalytics() {
       console.log(`[Analytics] Event: ${eventName}`, params);
     }
 
-    // Example integration with Yandex Metrica (ym)
-    // if (typeof window !== 'undefined' && (window as any).ym) {
-    //   (window as any).ym(99999999, 'reachGoal', eventName, params);
-    // }
+    if (typeof window !== 'undefined' && (window as any).ym) {
+      (window as any).ym(106176490, 'reachGoal', eventName, params);
+    }
   };
 
   /**
@@ -28,9 +27,9 @@ export default function useAnalytics() {
       console.log(`[Analytics] PageView: ${url}`);
     }
 
-    // if (typeof window !== 'undefined' && (window as any).ym) {
-    //   (window as any).ym(99999999, 'hit', url);
-    // }
+    if (typeof window !== 'undefined' && (window as any).ym) {
+      (window as any).ym(106176490, 'hit', url);
+    }
   };
 
   return {

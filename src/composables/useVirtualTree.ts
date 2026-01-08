@@ -12,6 +12,8 @@ export interface TVirtualNode {
   path: string;
   /** Depth level in the tree (0 for root) */
   depth: number;
+  /** Path to the parent node */
+  parentPath: string | null;
 }
 
 /**
@@ -30,17 +32,17 @@ export function useVirtualTree(rootNodeRef: TTreeNode | null | Ref<TTreeNode | n
 
     const result: TVirtualNode[] = [];
 
-    const flatten = (node: TTreeNode, path: string, depth: number) => {
-      result.push({ node, path, depth });
+    const flatten = (node: TTreeNode, path: string, depth: number, parentPath: string | null) => {
+      result.push({ node, path, depth, parentPath });
 
       if (treeStore.isExpanded(path) && node.children) {
         node.children.forEach(child => {
-          flatten(child, `${path}.${child.key}`, depth + 1);
+          flatten(child, `${path}.${child.key}`, depth + 1, path);
         });
       }
     };
 
-    flatten(rootNode, 'root', 0);
+    flatten(rootNode, 'root', 0, null);
     return result;
   });
 
