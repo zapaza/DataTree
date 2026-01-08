@@ -6,7 +6,7 @@
 
 Professional tool for visualizing and analyzing JSON and XML structures directly in the browser. Built using modern technologies and focused on performance and developer convenience.
 
-**Live Demo:** [https://datatree-visualizer.netlify.app](https://datatree-visualizer.netlify.app)
+**Live Demo:** [https://courageous-zuccutto-88e1c5.netlify.app](https://courageous-zuccutto-88e1c5.netlify.app)
 
 ## ✨ Features
 
@@ -43,7 +43,7 @@ Professional tool for visualizing and analyzing JSON and XML structures directly
 ## 🚀 Quick Start
 
 ### Online Usage
-1. Open [datatree-visualizer.netlify.app](https://datatree-visualizer.netlify.app)
+1. Open [courageous-zuccutto-88e1c5.netlify.app](https://courageous-zuccutto-88e1c5.netlify.app)
 2. Paste text or drag a file into the editor area.
 3. Explore the structure in the visualizer on the right.
 

@@ -29,7 +29,7 @@
       </button>
       <a
         v-if="!isMobile"
-        href="https://github.com/ваш-username/datatree"
+        href="https://github.com/zapaza/DataTree"
         target="_blank"
         class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-[#2d2d2d] transition-colors text-base"
         aria-label="GitHub repository"
