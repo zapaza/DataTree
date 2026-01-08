@@ -8,6 +8,8 @@ Professional tool for visualizing and analyzing JSON and XML structures directly
 
 **Live Demo:** [https://courageous-zuccutto-88e1c5.netlify.app](https://courageous-zuccutto-88e1c5.netlify.app)
 
+![DataTree Interface](./public/d08d4c58df1545545114323379e35313_1767894518.png)
+
 ## ✨ Features
 
 ### 🔍 Core Functionality
