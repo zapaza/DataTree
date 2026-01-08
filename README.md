@@ -50,7 +50,7 @@ Professional tool for visualizing and analyzing JSON and XML structures directly
 ### Development
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/datatree.git
+git clone https://github.com/zapaza/DataTree.git
 cd datatree
 
 # Install dependencies
