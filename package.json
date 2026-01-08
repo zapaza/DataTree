@@ -1,0 +1,61 @@
+{
+  "name": "vue-project",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "run-p type-check \"build-only {@}\" --",
+    "preview": "vite preview",
+    "build-only": "vite build",
+    "type-check": "vue-tsc --build",
+    "test:unit": "vitest",
+    "lint": "eslint vue-project --fix --cache",
+    "format": "prettier --write --experimental-cli src"
+  },
+  "dependencies": {
+    "@monaco-editor/loader": "^1.7.0",
+    "fast-xml-parser": "^5.3.3",
+    "jsonc-parser": "^3.3.1",
+    "monaco-editor": "^0.55.1",
+    "pinia": "^3.0.4",
+    "vue": "^3.5.26",
+    "vue-router": "^4.6.4",
+    "vue-virtual-scroller": "^2.0.0-beta.8",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@iconify-json/carbon": "^1.2.15",
+    "@tsconfig/node24": "^24.0.3",
+    "@types/node": "^24.10.4",
+    "@unocss/preset-attributify": "^66.5.12",
+    "@unocss/preset-icons": "^66.5.12",
+    "@unocss/preset-typography": "^66.5.12",
+    "@unocss/preset-uno": "^66.5.12",
+    "@unocss/preset-web-fonts": "^66.5.12",
+    "@unocss/transformer-directives": "^66.5.12",
+    "@unocss/transformer-variant-group": "^66.5.12",
+    "@vitejs/plugin-vue": "^6.0.3",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "@vue/eslint-config-typescript": "^14.6.0",
+    "@vue/test-utils": "^2.4.6",
+    "@vue/tsconfig": "^0.8.1",
+    "eslint": "^9.39.2",
+    "eslint-plugin-vue": "~10.6.2",
+    "fake-indexeddb": "^6.2.5",
+    "jiti": "^2.6.1",
+    "jsdom": "^27.4.0",
+    "npm-run-all2": "^8.0.4",
+    "prettier": "3.7.4",
+    "typescript": "~5.9.3",
+    "unocss": "^66.5.12",
+    "vite": "^7.3.0",
+    "vite-plugin-pwa": "^1.2.0",
+    "vite-plugin-vue-devtools": "^8.0.5",
+    "vitest": "^4.0.16",
+    "vue-tsc": "^3.2.2"
+  }
+}

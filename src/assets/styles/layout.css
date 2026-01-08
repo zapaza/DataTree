@@ -1,0 +1,30 @@
+.layout-grid {
+  display: grid;
+  height: 100%;
+}
+
+@media (min-width: 1024px) {
+  .layout-grid {
+    grid-template-columns: 1fr 4px 1fr;
+  }
+}
+
+.resize-handle {
+  transition: background-color 0.2s;
+}
+
+.resize-handle:hover {
+  background-color: var(--un-preset-primary-400, #60a5fa);
+}
+
+/* Адаптивность для мобилок */
+@media (max-width: 1023px) {
+  .main-content {
+    flex-direction: column;
+  }
+
+  .layout-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+}

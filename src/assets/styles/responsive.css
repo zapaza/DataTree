@@ -1,0 +1,39 @@
+/* Адаптивные стили для мобильных устройств */
+
+:root {
+  --touch-target-size: 44px;
+}
+
+@media (max-width: 767px) {
+  html {
+    font-size: 14px;
+  }
+
+  /* Увеличенные области касания для кнопок */
+  button,
+  [role="button"],
+  .cursor-pointer {
+    min-height: 1.5rem;
+    min-width: 1.5rem;
+  }
+
+  /* Адаптивные отступы */
+  .p-4 {
+    padding: 1rem !important;
+  }
+
+  .gap-4 {
+    gap: 1rem !important;
+  }
+
+  /* Скроллбары на мобильных */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+}
+
+/* Плавный переход для лейаута */
+main, aside, header {
+  transition: all 0.3s ease-in-out;
+}
