@@ -1,12 +1,24 @@
-import { computed } from 'vue';
+import { computed, toValue, type MaybeRefOrGetter } from 'vue';
 import type { TTreeNode } from '../types/store';
 
-export default function useTreeNode(node: TTreeNode, path: string) {
+/**
+ * Composable for tree node logic.
+ * Handles expandable state, icons, colors and value formatting.
+ *
+ * @param nodeRef - Reactive reference or getter for the node data.
+ * @param pathRef - Reactive reference or getter for the node path.
+ */
+export default function useTreeNode(
+  nodeRef: MaybeRefOrGetter<TTreeNode>,
+  pathRef: MaybeRefOrGetter<string>
+) {
   const isExpandable = computed(() => {
+    const node = toValue(nodeRef);
     return (node.type === 'object' || node.type === 'array') && (node.children?.length ?? 0) > 0;
   });
 
   const iconClass = computed(() => {
+    const node = toValue(nodeRef);
     switch (node.type) {
       case 'object': return 'i-carbon-json';
       case 'array': return 'i-carbon-list-boxes';
@@ -19,6 +31,7 @@ export default function useTreeNode(node: TTreeNode, path: string) {
   });
 
   const valueColorClass = computed(() => {
+    const node = toValue(nodeRef);
     switch (node.type) {
       case 'string': return 'text-green-600';
       case 'number': return 'text-blue-600';
@@ -29,6 +42,7 @@ export default function useTreeNode(node: TTreeNode, path: string) {
   });
 
   const formattedValue = computed(() => {
+    const node = toValue(nodeRef);
     if (node.type === 'object') return '{}';
     if (node.type === 'array') return '[]';
     if (node.type === 'string') return `"${node.value}"`;

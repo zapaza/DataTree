@@ -105,6 +105,15 @@ export const useAppStore = defineStore('app', () => {
     }
   };
 
+  const sortKeys = () => {
+    if (format.value === 'json') {
+      const sorted = JsonFormatter.sortKeys(rawInput.value);
+      if (sorted !== rawInput.value) {
+        setRawInput(sorted);
+      }
+    }
+  };
+
   const convertFormat = () => {
     let converted: string | null = null;
     let newFormat: TDataType = format.value;
@@ -233,6 +242,7 @@ export const useAppStore = defineStore('app', () => {
     resetFilters,
     formatJson,
     minifyJson,
+    sortKeys,
     convertFormat,
     validateSchema,
     parseInput,

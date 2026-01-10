@@ -89,7 +89,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const treeStore = useTreeStore();
 const settingsStore = useSettingsStore();
-const { isExpandable, iconClass, valueColorClass, formattedValue } = useTreeNode(props.node, props.path);
+const { isExpandable, iconClass, valueColorClass, formattedValue } = useTreeNode(() => props.node, () => props.path);
 
 const isExpanded = computed(() => treeStore.isExpanded(props.path));
 const isSelected = computed(() => treeStore.selectedPath === props.path);

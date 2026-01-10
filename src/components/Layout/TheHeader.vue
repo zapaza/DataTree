@@ -11,9 +11,12 @@
       </button>
 
       <div class="i-carbon-data-base text-2xl text-blue-600 dark:text-blue-400" />
-      <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-500 dark:from-blue-400 dark:to-teal-400">
-        DataTree
-      </span>
+      <div class="flex items-baseline gap-1">
+        <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-500 dark:from-blue-400 dark:to-teal-400">
+          DataTree
+        </span>
+        <span class="text-xs item font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-500 dark:from-blue-400 dark:to-teal-400">- alfa</span>
+      </div>
     </div>
 
     <div class="flex items-center gap-3">

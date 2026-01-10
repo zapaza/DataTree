@@ -21,8 +21,9 @@ export function useTreeSearch() {
 
     // Автоматически разворачиваем и выделяем первый результат
     if (paths.length > 0) {
-      treeStore.expandToPath(paths[0]);
-      treeStore.setSelectedPath(paths[0]);
+      const firstPath = paths[0];
+      treeStore.expandToPath(firstPath as string);
+      treeStore.setSelectedPath(firstPath as string);
     }
   };
 
@@ -42,8 +43,8 @@ export function useTreeSearch() {
     }
   };
 
-  // Следим за изменением поискового запроса с дебаунсом
-  watch(searchQuery, (newQuery) => {
+  // Следим за изменением поискового запроса и данных с дебаунсом
+  watch([searchQuery, () => appStore.parsedData], () => {
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       performSearch();

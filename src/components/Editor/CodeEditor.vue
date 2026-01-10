@@ -71,6 +71,15 @@
             <div class="i-carbon-bring-to-front text-base md:text-sm" />
           </button>
           <button
+            v-if="appStore.format === 'json'"
+            class="p-2 md:p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] text-muted transition-colors"
+            title="Sort Keys Alphabetically"
+            v-tooltip="'Sort Keys Alphabetically'"
+            @click="handleSort"
+          >
+            <div class="i-carbon-sort-ascending text-base md:text-sm" />
+          </button>
+          <button
             class="p-2 md:p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] text-muted transition-colors"
             :title="appStore.format === 'json' ? 'Convert to XML' : 'Convert to JSON'"
             v-tooltip="appStore.format === 'json' ? 'Convert to XML' : 'Convert to JSON'"
@@ -157,6 +166,13 @@ const handleFormat = () => {
 
 const handleMinify = () => {
   appStore.minifyJson();
+  if (editor) {
+    editor.setValue(appStore.rawInput);
+  }
+};
+
+const handleSort = () => {
+  appStore.sortKeys();
   if (editor) {
     editor.setValue(appStore.rawInput);
   }
