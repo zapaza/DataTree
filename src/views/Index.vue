@@ -45,7 +45,7 @@
               :disabled="!appStore.parsedData"
               @click="expandAll"
             >
-              <div class="i-carbon-chevron-sort text-sm" />
+              <div class="i-material-symbols-expand-all text-sm" />
             </button>
             <button
               class="p-1 hover:bg-gray-200 dark:hover:bg-[#2d2d2d] rounded transition-colors disabled:opacity-30 text-muted"
@@ -53,7 +53,7 @@
               :disabled="!appStore.parsedData"
               @click="collapseAll"
             >
-              <div class="i-carbon-chevron-mini text-sm" />
+              <div class="i-material-symbols-collapse-all text-sm" />
             </button>
           </div>
         </div>

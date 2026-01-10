@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@iconify-json/carbon": "^1.2.15",
+    "@iconify-json/material-symbols": "^1.2.51",
     "@tsconfig/node24": "^24.0.3",
     "@types/node": "^24.10.4",
     "@unocss/preset-attributify": "^66.5.12",

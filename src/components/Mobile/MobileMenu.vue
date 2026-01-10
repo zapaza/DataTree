@@ -11,7 +11,7 @@
       <div class="p-4 border-b border-light flex items-center justify-between bg-secondary">
         <div class="flex items-center gap-2">
           <div class="i-carbon-data-base text-2xl text-blue-600 dark:text-blue-400" />
-          <span class="font-bold text-lg">DataTree</span>
+          <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-500 dark:from-blue-400 dark:to-teal-400">DataTree</span>
         </div>
         <button
           class="p-2 hover:bg-gray-200 dark:hover:bg-[#2d2d2d] rounded-lg text-muted transition-colors"
