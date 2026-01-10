@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <div class="min-h-10 md:h-8 bg-secondary border-b border-light flex items-center px-4 justify-between gap-2 flex-wrap md:flex-nowrap py-1 md:py-0">
+    <div class="min-h-10 bg-secondary border-b border-light flex items-center px-4 justify-between gap-2 flex-wrap md:flex-nowrap py-1 md:py-0">
       <div class="flex gap-2 items-center flex-wrap">
         <div class="flex gap-1 mr-2">
           <button
