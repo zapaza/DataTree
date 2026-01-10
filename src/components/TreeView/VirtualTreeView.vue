@@ -101,7 +101,7 @@ const treeContainer = ref<HTMLElement | null>(null);
 const showMobileFilters = ref(false);
 
 const parsedData = computed(() => appStore.filteredData);
-const hasData = computed(() => !!parsedData.value);
+const hasData = computed(() => !!appStore.parsedData);
 
 const hasActiveFilters = computed(() => {
   const f = appStore.filters;
