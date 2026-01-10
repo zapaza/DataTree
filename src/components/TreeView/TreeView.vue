@@ -1,9 +1,13 @@
 <template>
   <div class="tree-view-container h-full flex flex-col">
     <!-- Поиск и фильтры -->
-    <div class="border-b border-light">
-      <TreeSearch v-if="hasData" />
-      <TreeFilters v-if="hasData" />
+    <div v-if="hasData" class="flex flex-col bg-base border-b border-base shrink-0">
+      <div class="p-2 bg-secondary border-b border-light">
+        <TreeSearch />
+      </div>
+      <div class="p-3">
+        <TreeFilters />
+      </div>
     </div>
 
     <!-- Если данные есть и не парсим -->

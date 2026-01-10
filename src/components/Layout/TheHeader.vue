@@ -20,7 +20,6 @@
       <button
         v-if="!isMobile"
         class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-[#2d2d2d] transition-colors"
-        :title="settingsStore.settings.theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'"
         :aria-label="settingsStore.settings.theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'"
         @click="settingsStore.toggleTheme"
       >

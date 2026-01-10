@@ -1,5 +1,5 @@
 <template>
-  <div class="p-3 border-b border-light bg-base space-y-3">
+  <div class="space-y-3">
     <!-- Основные чекбоксы -->
     <div class="flex flex-wrap gap-x-4 gap-y-2">
       <label class="flex items-center gap-2 cursor-pointer group">

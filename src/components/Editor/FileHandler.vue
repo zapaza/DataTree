@@ -9,21 +9,21 @@
     />
 
     <button
-      class="p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] text-muted hover:text-blue-600 dark:hover:text-blue-400 transition-all flex items-center gap-1"
+      class="p-2 md:p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] text-muted hover:text-blue-600 dark:hover:text-blue-400 transition-all flex items-center gap-1"
       title="Import file (JSON/XML)"
       @click="triggerFileInput"
     >
-      <div class="i-carbon-upload text-sm" />
-      <span class="text-[10px] font-medium hidden sm:inline">Import</span>
+      <div class="i-carbon-upload text-base md:text-sm" />
+      <span class="text-xs md:text-[10px] font-medium hidden sm:inline">Import</span>
     </button>
 
     <button
-      class="p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] text-muted hover:text-blue-600 dark:hover:text-blue-400 transition-all flex items-center gap-1"
+      class="p-2 md:p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] text-muted hover:text-blue-600 dark:hover:text-blue-400 transition-all flex items-center gap-1"
       title="Export to file"
       @click="handleExport"
     >
-      <div class="i-carbon-download text-sm" />
-      <span class="text-[10px] font-medium hidden sm:inline">Export</span>
+      <div class="i-carbon-download text-base md:text-sm" />
+      <span class="text-xs md:text-[10px] font-medium hidden sm:inline">Export</span>
     </button>
   </div>
 </template>

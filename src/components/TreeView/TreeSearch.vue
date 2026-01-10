@@ -1,5 +1,5 @@
 <template>
-  <div class="tree-search flex items-center gap-2 p-2 bg-secondary border-b border-light">
+  <div class="tree-search flex items-center gap-2">
     <div class="relative flex-1 group">
       <div class="absolute left-2.5 top-1/2 -translate-y-1/2 i-carbon-search text-light group-focus-within:text-blue-500 transition-colors" />
       <input

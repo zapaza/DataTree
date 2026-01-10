@@ -11,20 +11,24 @@ export const useTreeStore = defineStore('tree', () => {
   const currentSearchIndex = ref(-1);
 
   const toggleNode = (path: string) => {
-    if (expandedNodes.value.has(path)) {
-      expandedNodes.value.delete(path);
+    const newExpanded = new Set(expandedNodes.value);
+    if (newExpanded.has(path)) {
+      newExpanded.delete(path);
     } else {
-      expandedNodes.value.add(path);
+      newExpanded.add(path);
     }
+    expandedNodes.value = newExpanded;
   };
 
   const expandToPath = (path: string) => {
+    const newExpanded = new Set(expandedNodes.value);
     const parts = path.split('.');
     let current = '';
     parts.forEach((part, index) => {
       current = index === 0 ? part : `${current}.${part}`;
-      expandedNodes.value.add(current);
+      newExpanded.add(current);
     });
+    expandedNodes.value = newExpanded;
   };
 
   const setSearchResults = (query: string, paths: string[]) => {

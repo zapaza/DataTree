@@ -59,6 +59,21 @@ describe('SearchIndex', () => {
     expect(results[0].valueMatch).toBe(true);
   });
 
+  it('should find null values when searching for "null"', () => {
+    const treeWithNull: TTreeNode = {
+      type: 'object',
+      key: 'root',
+      value: null,
+      children: [
+        { type: 'null', key: 'meta', value: null }
+      ]
+    };
+    const results = SearchIndex.search(treeWithNull, 'null');
+    // Должно найти meta (valueMatch) и возможно root (если query 'null' совпадет с value null)
+    // В SearchIndex.ts: if (node.value === null) { if (normalizedQuery === 'null') { valueMatch = true; ... } }
+    expect(results.some(r => r.path === 'root.meta' && r.valueMatch)).toBe(true);
+  });
+
   it('should be case-insensitive', () => {
     const results = SearchIndex.search(tree, 'NEW YORK');
     expect(results).toHaveLength(1);

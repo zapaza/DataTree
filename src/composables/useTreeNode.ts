@@ -29,6 +29,8 @@ export default function useTreeNode(node: TTreeNode, path: string) {
   });
 
   const formattedValue = computed(() => {
+    if (node.type === 'object') return '{}';
+    if (node.type === 'array') return '[]';
     if (node.type === 'string') return `"${node.value}"`;
     return String(node.value);
   });

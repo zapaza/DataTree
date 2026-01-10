@@ -1,4 +1,4 @@
-import { ref, watch, onUnmounted } from 'vue';
+import { ref, watch, onUnmounted, computed } from 'vue';
 import { useAppStore } from '../stores/appStore';
 import { useTreeStore } from '../stores/treeStore';
 import { SearchIndex } from '../utils/search-index';
@@ -16,7 +16,14 @@ export function useTreeSearch() {
     }
 
     const results = SearchIndex.search(appStore.parsedData, searchQuery.value);
-    treeStore.setSearchResults(searchQuery.value, results.map(r => r.path));
+    const paths = results.map(r => r.path);
+    treeStore.setSearchResults(searchQuery.value, paths);
+
+    // Автоматически разворачиваем и выделяем первый результат
+    if (paths.length > 0) {
+      treeStore.expandToPath(paths[0]);
+      treeStore.setSelectedPath(paths[0]);
+    }
   };
 
   const next = () => {
@@ -24,7 +31,6 @@ export function useTreeSearch() {
     if (path) {
       treeStore.expandToPath(path);
       treeStore.setSelectedPath(path);
-      scrollToPath(path);
     }
   };
 
@@ -33,18 +39,7 @@ export function useTreeSearch() {
     if (path) {
       treeStore.expandToPath(path);
       treeStore.setSelectedPath(path);
-      scrollToPath(path);
     }
-  };
-
-  const scrollToPath = (path: string) => {
-    // Ждем следующего тика, чтобы DOM успел обновиться (развернуться узлы)
-    setTimeout(() => {
-      const element = document.querySelector(`[data-path="${path}"]`);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, 50);
   };
 
   // Следим за изменением поискового запроса с дебаунсом
@@ -64,7 +59,7 @@ export function useTreeSearch() {
     searchQuery,
     next,
     prev,
-    resultsCount: treeStore.searchResults.length,
-    currentIndex: treeStore.currentSearchIndex
+    resultsCount: computed(() => treeStore.searchResults.length),
+    currentIndex: computed(() => treeStore.currentSearchIndex)
   };
 }

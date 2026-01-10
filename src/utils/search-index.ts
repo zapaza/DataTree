@@ -18,7 +18,13 @@ export class SearchIndex {
     // Проверяем значение
     let valueMatch = false;
     let valueText = '';
-    if (node.value !== null && node.value !== undefined) {
+
+    if (node.value === null) {
+      if (normalizedQuery === 'null') {
+        valueMatch = true;
+        valueText = 'null';
+      }
+    } else if (node.value !== undefined) {
       valueText = String(node.value);
       valueMatch = valueText.toLowerCase().includes(normalizedQuery);
     }
@@ -28,7 +34,7 @@ export class SearchIndex {
         path,
         keyMatch,
         valueMatch,
-        text: keyMatch ? node.key : valueText
+        text: valueMatch ? valueText : node.key
       });
     }
 

@@ -1,65 +1,91 @@
-import type { IXmlParseResult } from '@/types/editor';
+import type { TTreeNode, TTreeNodeType } from '@/types/store';
 
+/**
+ * Utility for converting flat object from fast-xml-parser into TTreeNode structure.
+ */
 export default class XmlToJsonConverter {
-  static convert(data: any, name: string = 'root'): IXmlParseResult {
-    const result: IXmlParseResult = {
-      success: true,
-      name,
-      data: null,
-      attributes: {},
-      children: []
+  /**
+   * Converts a flat JS object (from fast-xml-parser) into a TTreeNode.
+   * @param data - The data object to convert.
+   * @param name - The key name for the node.
+   * @returns A TTreeNode object.
+   */
+  static convert(data: any, name: string = 'root'): TTreeNode {
+    const type = this.getType(data);
+    const node: TTreeNode = {
+      type,
+      key: name,
+      value: (type === 'object' || type === 'array') ? null : data
     };
 
     if (data === null || data === undefined) {
-      return result;
+      return node;
     }
 
     if (typeof data !== 'object') {
-      result.data = data;
-      return result;
+      return node;
     }
+
+    const children: TTreeNode[] = [];
 
     // Обработка атрибутов и дочерних элементов
     for (const key in data) {
+      const val = data[key];
+
       if (key.startsWith('@_')) {
         // Это атрибут
         const attrName = key.substring(2);
-        if (result.attributes) {
-          result.attributes[attrName] = String(data[key]);
-        }
+        children.push({
+          type: this.getType(val),
+          key: `@${attrName}`,
+          value: val
+        });
       } else if (key === '#text' || key === '#cdata') {
         // Это текстовое содержимое или CDATA узла
-        result.data = data[key];
+        if (Object.keys(data).length === 1) {
+          // Если это единственный ключ, то это значение самого узла
+          node.value = val;
+          node.type = this.getType(val);
+        } else {
+          children.push({
+            type: this.getType(val),
+            key: key === '#text' ? 'text' : 'cdata',
+            value: val
+          });
+        }
       } else if (key.startsWith('?xml')) {
         // Игнорируем декларацию XML
         continue;
       } else {
         // Это дочерний элемент
-        const childData = data[key];
-        if (Array.isArray(childData)) {
-          childData.forEach(item => {
-            const child = this.convert(item, key);
-            // Если у ребенка есть имя, мы должны сохранить его.
-            // Но наша структура IXmlParseResult не имеет поля name.
-            // Добавим его в интерфейс или будем использовать data как обертку.
-            result.children?.push(child);
+        if (Array.isArray(val)) {
+          val.forEach((item, index) => {
+            // Для XML элементов массива используем имя тега + индекс для уникальности ключа
+            children.push(this.convert(item, `${key}[${index}]`));
           });
         } else {
-          result.children?.push(this.convert(childData, key));
+          children.push(this.convert(val, key));
         }
       }
     }
 
-    // Если нет детей, удаляем свойство
-    if (result.children?.length === 0) {
-      delete result.children;
+    if (children.length > 0) {
+      node.children = children;
+      node.type = 'object';
+      node.value = null;
     }
 
-    // Если нет атрибутов, удаляем свойство
-    if (Object.keys(result.attributes || {}).length === 0) {
-      delete result.attributes;
-    }
+    return node;
+  }
 
-    return result;
+  private static getType(value: any): TTreeNodeType {
+    if (value === null) return 'null';
+    if (Array.isArray(value)) return 'array';
+    const type = typeof value;
+    if (type === 'object') return 'object';
+    if (type === 'string') return 'string';
+    if (type === 'number') return 'number';
+    if (type === 'boolean') return 'boolean';
+    return 'string';
   }
 }

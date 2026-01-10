@@ -39,9 +39,12 @@ describe('XmlToJsonConverter', () => {
       }
     };
     const tree = XmlToJsonConverter.convert(data.root);
-    expect(tree.children).toHaveLength(1);
-    expect(tree.children?.[0].attributes?.id).toBe('1');
-    expect(tree.children?.[0].data).toBe('Hello');
+    expect(tree.children).toHaveLength(1); // 'item'
+    const itemNode = tree.children?.[0];
+    expect(itemNode?.key).toBe('item');
+    expect(itemNode?.children).toHaveLength(2); // '@id' and 'text'
+    expect(itemNode?.children?.find(c => c.key === '@id')?.value).toBe('1');
+    expect(itemNode?.children?.find(c => c.key === 'text')?.value).toBe('Hello');
   });
 
   it('should handle multiple children (arrays)', () => {
@@ -54,20 +57,17 @@ describe('XmlToJsonConverter', () => {
       }
     };
     const tree = XmlToJsonConverter.convert(data.root);
-    // data.root содержит ключ 'item', который является массивом.
-    // XmlToJsonConverter.convert(data.root) должен вернуть объект с children,
-    // где каждый ребенок соответствует элементу из 'item'.
     expect(tree.children).toHaveLength(2);
-    expect(tree.children?.[0].name).toBe('item');
-    expect(tree.children?.[0].data).toBe('1');
-    expect(tree.children?.[1].name).toBe('item');
-    expect(tree.children?.[1].data).toBe('2');
+    expect(tree.children?.[0].key).toBe('item[0]');
+    expect(tree.children?.[0].value).toBe('1');
+    expect(tree.children?.[1].key).toBe('item[1]');
+    expect(tree.children?.[1].value).toBe('2');
   });
 
   it('should handle CDATA', () => {
     const xml = '<root><![CDATA[Some content]]></root>';
     const result = XmlParser.parse(xml);
     const tree = XmlToJsonConverter.convert(result.data.root);
-    expect(tree.data).toBe('Some content');
+    expect(tree.value).toBe('Some content');
   });
 });

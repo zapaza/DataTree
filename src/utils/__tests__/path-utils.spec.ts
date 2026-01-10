@@ -22,6 +22,15 @@ describe('PathUtils', () => {
     expect(PathUtils.getNodePath('root.items.[5]', 'xpath')).toBe('/items/*[6]');
   });
 
+  it('should handle keys with spaces and special characters', () => {
+    const complexPath = 'root.data.first name.last-name';
+    // Current implementation just joins with dots, which is acceptable for simple visualization
+    // but we should verify it doesn't crash
+    expect(PathUtils.getNodePath(complexPath, 'js')).toBe('data.first name.last-name');
+    expect(PathUtils.getNodePath(complexPath, 'jsonpath')).toBe('$.data.first name.last-name');
+    expect(PathUtils.getNodePath(complexPath, 'xpath')).toBe('/data/first name/last-name');
+  });
+
   it('should format values correctly', () => {
     expect(PathUtils.formatValue('test', 'string')).toBe('test');
     expect(PathUtils.formatValue(123, 'number')).toBe('123');

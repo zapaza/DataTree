@@ -1,17 +1,17 @@
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <div class="h-8 bg-secondary border-b border-light flex items-center px-4 justify-between">
-      <div class="flex gap-2 items-center">
+    <div class="min-h-10 md:h-8 bg-secondary border-b border-light flex items-center px-4 justify-between gap-2 flex-wrap md:flex-nowrap py-1 md:py-0">
+      <div class="flex gap-2 items-center flex-wrap">
         <div class="flex gap-1 mr-2">
           <button
-            class="px-2 py-0.5 text-xs rounded transition-colors"
+            class="px-3 py-1 md:px-2 md:py-0.5 text-sm md:text-xs rounded transition-colors"
             :class="appStore.format === 'json' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold' : 'text-muted hover:bg-gray-200 dark:hover:bg-[#2d2d2d]'"
             @click="appStore.setFormat('json')"
           >
             JSON
           </button>
           <button
-            class="px-2 py-0.5 text-xs rounded transition-colors"
+            class="px-3 py-1 md:px-2 md:py-0.5 text-sm md:text-xs rounded transition-colors"
             :class="appStore.format === 'xml' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold' : 'text-muted hover:bg-gray-200 dark:hover:bg-[#2d2d2d]'"
             @click="appStore.setFormat('xml')"
           >
@@ -21,56 +21,62 @@
 
         <div class="flex gap-1 mr-2 border-l border-base pl-2">
           <button
-            class="p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-muted"
+            class="p-2 md:p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-muted"
             :disabled="!historyStore.canUndo"
             title="Undo (Ctrl+Z)"
+            v-tooltip="'Undo (Ctrl+Z)'"
             @click="handleUndo"
           >
-            <div class="i-carbon-undo text-sm" />
+            <div class="i-carbon-undo text-base md:text-sm" />
           </button>
           <button
-            class="p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-muted"
+            class="p-2 md:p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-muted"
             :disabled="!historyStore.canRedo"
             title="Redo (Ctrl+Shift+Z)"
+            v-tooltip="'Redo (Ctrl+Shift+Z)'"
             @click="handleRedo"
           >
-            <div class="i-carbon-redo text-sm" />
+            <div class="i-carbon-redo text-base md:text-sm" />
           </button>
         </div>
 
         <button
           v-if="hasError && appStore.format === 'json'"
-          class="flex items-center gap-1 px-2 py-0.5 text-xs bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/40 rounded transition-colors border border-amber-200 dark:border-amber-800"
+          class="flex items-center gap-1 px-3 py-1 md:px-2 md:py-0.5 text-sm md:text-xs bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/40 rounded transition-colors border border-amber-200 dark:border-amber-800"
           title="Try to auto-fix JSON errors"
+          v-tooltip="'Try to auto-fix JSON errors'"
           @click="applyFix"
         >
-          <div class="i-carbon-magic-wand text-[10px]" />
+          <div class="i-carbon-magic-wand text-xs md:text-[10px]" />
           <span>Auto-fix</span>
         </button>
 
         <div v-if="appStore.isValid" class="flex gap-1 ml-2 border-l border-base pl-2">
           <button
             v-if="appStore.format === 'json'"
-            class="p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] text-muted transition-colors"
+            class="p-2 md:p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] text-muted transition-colors"
             title="Format JSON"
+            v-tooltip="'Format JSON'"
             @click="handleFormat"
           >
-            <div class="i-carbon-center-to-fit text-sm" />
+            <div class="i-carbon-center-to-fit text-base md:text-sm" />
           </button>
           <button
             v-if="appStore.format === 'json'"
-            class="p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] text-muted transition-colors"
+            class="p-2 md:p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] text-muted transition-colors"
             title="Minify JSON"
+            v-tooltip="'Minify JSON'"
             @click="handleMinify"
           >
-            <div class="i-carbon-bring-to-front text-sm" />
+            <div class="i-carbon-bring-to-front text-base md:text-sm" />
           </button>
           <button
-            class="p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] text-muted transition-colors"
+            class="p-2 md:p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] text-muted transition-colors"
             :title="appStore.format === 'json' ? 'Convert to XML' : 'Convert to JSON'"
+            v-tooltip="appStore.format === 'json' ? 'Convert to XML' : 'Convert to JSON'"
             @click="handleConvert"
           >
-            <div class="i-carbon-arrows-horizontal text-sm" />
+            <div class="i-carbon-arrows-horizontal text-base md:text-sm" />
           </button>
         </div>
 
@@ -253,13 +259,14 @@ onMounted(async () => {
       theme: settingsStore.settings.theme === 'dark' ? 'vs-dark' : 'vs',
       automaticLayout: true,
       minimap: { enabled: settingsStore.settings.editor.minimap },
-      scrollBeyondLastLine: false,
+      scrollBeyondLastLine: true,
       fontSize: settingsStore.settings.editor.fontSize,
       fontFamily: settingsStore.settings.editor.fontFamily,
       lineNumbers: settingsStore.settings.editor.showLineNumbers ? 'on' : 'off',
       tabSize: settingsStore.settings.editor.tabSize,
       renderWhitespace: settingsStore.settings.editor.renderWhitespace,
       cursorStyle: settingsStore.settings.editor.cursorStyle,
+      padding: { bottom: 200 }
     });
 
     editor = monacoStuff.editor;
@@ -307,6 +314,7 @@ watch(() => settingsStore.settings, (newSettings) => {
       tabSize: newSettings.editor.tabSize,
       renderWhitespace: newSettings.editor.renderWhitespace,
       cursorStyle: newSettings.editor.cursorStyle,
+      padding: { bottom: 200 }
     });
 
     monacoInstance.value.editor.setTheme(newSettings.theme === 'dark' ? 'vs-dark' : 'vs');
