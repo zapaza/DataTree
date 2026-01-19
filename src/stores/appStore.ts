@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
+import debounce from '@/utils/debounce';
 import type { TDataType } from '@/types/editor';
 import type { TTreeNode, TParseError, TTreeFilters } from '../types/store';
 import TreeTransformer from '@/utils/tree-transformer';
@@ -61,10 +62,12 @@ export const useAppStore = defineStore('app', () => {
     rawInput.value = input;
   };
 
+  const debouncedParseInput = debounce(() => parseInput(), 400);
+
   // Watch for input changes to sync with localStorage and parse
   watch([rawInput, format], () => {
     localStorage.setItem(STORAGE_KEY_INPUT, rawInput.value);
-    parseInput();
+    debouncedParseInput();
   });
 
   const setFormat = (newFormat: TDataType) => {

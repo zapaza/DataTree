@@ -112,6 +112,25 @@
 
       <!-- Advanced -->
       <section class="space-y-3 pt-4">
+        <h3 class="text-xs font-bold uppercase text-light tracking-wider flex items-center gap-2">
+          <div class="i-carbon-data-base" />
+          Diff Sessions
+        </h3>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-xs text-muted font-medium ml-1">Retention: {{ settingsStore.settings.diffPersistence?.retentionDays ?? 30 }} days</label>
+          <input
+            type="range"
+            min="1"
+            max="90"
+            v-model.number="settingsStore.settings.diffPersistence!.retentionDays"
+            class="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+          />
+          <p class="text-[10px] text-light leading-snug mt-1">
+            Old diff sessions will be cleaned up automatically.
+          </p>
+        </div>
+
         <div class="flex items-center gap-2">
           <button
             class="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-gray-100 dark:bg-[#2d2d2d] hover:bg-gray-200 dark:hover:bg-[#3d3d3d] text-base rounded-lg text-xs font-bold transition-colors shadow-sm"
@@ -124,7 +143,7 @@
             class="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-gray-100 dark:bg-[#2d2d2d] hover:bg-gray-200 dark:hover:bg-[#3d3d3d] text-base rounded-lg text-xs font-bold transition-colors shadow-sm"
             @click="triggerImport"
           >
-            <div class="i-carbon-import" />
+            <div class="i-carbon-document-import" />
             Import
           </button>
         </div>

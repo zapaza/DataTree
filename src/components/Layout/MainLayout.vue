@@ -8,7 +8,11 @@
       </div>
 
       <main class="flex-1 flex overflow-hidden relative">
+        <div v-if="$slots.content" class="flex-1 flex overflow-hidden">
+          <slot name="content" />
+        </div>
         <div
+          v-else
           class="flex-1 grid grid-cols-1 lg:grid-cols-[var(--left-width)_auto_1fr] overflow-hidden bg-base"
           :class="{ 'grid-rows-[1fr_1fr]': isMobile }"
           :style="{ '--left-width': isMobile ? '100%' : `${leftWidth}%` }"
@@ -28,7 +32,7 @@
           </div>
         </div>
 
-        <div class="hidden xl:block w-72 border-l border-base bg-sidebar flex flex-col overflow-hidden">
+        <div v-if="!$slots.content" class="hidden xl:block w-72 border-l border-base bg-sidebar flex flex-col overflow-hidden">
           <slot name="right-sidebar" />
         </div>
       </main>

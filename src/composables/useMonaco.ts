@@ -1,6 +1,6 @@
 import loader from '@monaco-editor/loader';
 import type * as monaco from 'monaco-editor';
-import { shallowRef, onBeforeUnmount } from 'vue';
+import { shallowRef, onBeforeUnmount, onUnmounted } from 'vue';
 
 loader.config({
   paths: {
@@ -17,6 +17,7 @@ loader.config({
 export default function useMonaco() {
   const monacoInstance = shallowRef<typeof monaco | null>(null);
   let editorInstance: monaco.editor.IStandaloneCodeEditor | null = null;
+  let isUnmounted = false;
 
   /**
    * Initializes Monaco Editor in the given container with provided options.
@@ -31,6 +32,11 @@ export default function useMonaco() {
     try {
       // Загружаем Monaco через loader
       const monacoNamespace = await loader.init();
+
+      if (isUnmounted) {
+        return { monaco: monacoNamespace, editor: null };
+      }
+
       monacoInstance.value = monacoNamespace;
 
       // Создаем инстанс редактора
@@ -57,6 +63,12 @@ export default function useMonaco() {
   };
 
   onBeforeUnmount(() => {
+    isUnmounted = true;
+    destroyMonaco();
+  });
+
+  onUnmounted(() => {
+    isUnmounted = true;
     destroyMonaco();
   });
 

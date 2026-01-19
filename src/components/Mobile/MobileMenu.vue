@@ -22,6 +22,31 @@
       </div>
 
       <div class="flex-1 overflow-y-auto py-4">
+        <!-- Navigation -->
+        <div class="px-4 mb-6">
+          <h3 class="text-[10px] font-bold uppercase text-light tracking-widest mb-2 px-2">Navigation</h3>
+          <div class="space-y-1">
+            <router-link
+              to="/"
+              class="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-secondary text-base transition-colors"
+              exact-active-class="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold"
+              @click="$emit('close')"
+            >
+              <div class="i-carbon-edit text-xl" />
+              <span>Editor</span>
+            </router-link>
+            <router-link
+              to="/diff"
+              class="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-secondary text-base transition-colors"
+              active-class="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold"
+              @click="$emit('close')"
+            >
+              <div class="i-carbon-compare text-xl" />
+              <span>Diff</span>
+            </router-link>
+          </div>
+        </div>
+
         <!-- Tools -->
         <div class="px-4 mb-6">
           <h3 class="text-[10px] font-bold uppercase text-light tracking-widest mb-2 px-2">Tools & Data</h3>

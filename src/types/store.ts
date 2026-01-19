@@ -1,5 +1,3 @@
-import type { TDataType } from './editor';
-
 export type TTreeNodeType = 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null';
 
 export interface TTreeNode {
@@ -39,6 +37,10 @@ export interface TAppSettings {
     animate: boolean;
     indentSize: number;
     compactMode: boolean;
+  };
+  diffPersistence?: {
+    retentionDays: number; // default 30
+    maxSessions: number; // default 100
   };
 }
 
