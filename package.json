@@ -1,6 +1,6 @@
 {
   "name": "datatree",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -30,7 +30,6 @@
   "devDependencies": {
     "@iconify-json/carbon": "^1.2.15",
     "@iconify-json/material-symbols": "^1.2.51",
-    "@iconify-json/ph": "^1.2.2",
     "@tsconfig/node24": "^24.0.3",
     "@types/node": "^24.10.4",
     "@unocss/preset-attributify": "^66.5.12",
