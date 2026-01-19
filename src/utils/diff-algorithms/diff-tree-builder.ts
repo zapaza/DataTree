@@ -1,4 +1,4 @@
-import type { TDiffTreeNode, TDiffChangeType } from '@/types/diff';
+import type { TDiffTreeNode } from '@/types/diff';
 import type { TTreeNodeType } from '@/types/store';
 
 /**

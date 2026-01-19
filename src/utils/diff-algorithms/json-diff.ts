@@ -111,9 +111,7 @@ export function diffJson(left: any, right: any, options: TDiffOptions = {}): TDi
     // но в реальном приложении может потребоваться более сложная логика индексов.
 
     let offset = 0;
-    lcsResult.forEach((res, idx) => {
-      const currentPath = `${path}/${res.indexB !== -1 ? res.indexB : res.indexA}`;
-
+    lcsResult.forEach((res) => {
       if (res.type === 'unchanged') {
         // Рекурсивно проверяем вложенные структуры, если это объекты/массивы
         if (typeof res.item === 'object' && res.item !== null) {
@@ -145,7 +143,6 @@ export function diffJson(left: any, right: any, options: TDiffOptions = {}): TDi
   function compareArraysUnordered(a: any[], b: any[], path: string) {
     // Упрощенная логика: считаем количество вхождений каждого элемента.
     // Для сложных объектов это может быть дорого.
-    const remainingB = [...b];
     const usedIndicesB = new Set<number>();
 
     a.forEach((itemA, indexA) => {

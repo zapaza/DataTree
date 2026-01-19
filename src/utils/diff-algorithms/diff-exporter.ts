@@ -1,4 +1,4 @@
-import type { TDiffResult, TDiffNode } from '@/types/diff';
+import type { TDiffResult } from '@/types/diff';
 
 /**
  * Utility class for exporting diff results in various formats.

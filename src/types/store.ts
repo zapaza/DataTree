@@ -1,5 +1,3 @@
-import type { TDataType } from './editor';
-
 export type TTreeNodeType = 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null';
 
 export interface TTreeNode {

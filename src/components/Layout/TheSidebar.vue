@@ -51,13 +51,10 @@
 import { useRoute } from 'vue-router';
 import FileImportButtons from '@/components/Sidebar/FileImportButtons.vue';
 import ExamplesPanel from '@/components/Sidebar/ExamplesPanel.vue';
-import StatisticsPanel from '@/components/Sidebar/StatisticsPanel.vue';
 import DiffControls from '@/components/Sidebar/DiffControls.vue';
 import DiffSessions from '@/components/Sidebar/DiffSessions.vue';
 import DiffStatistics from '@/components/Sidebar/DiffStatistics.vue';
 import DiffExport from '@/components/Sidebar/DiffExport.vue';
-import GraphControls from '@/components/Sidebar/GraphControls.vue';
-import GraphLegend from '@/components/Sidebar/GraphLegend.vue';
 
 const route = useRoute();
 defineEmits(['toggle-history', 'toggle-settings']);

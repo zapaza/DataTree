@@ -221,7 +221,6 @@ import DiffTreeView from '@/components/TreeView/DiffTreeView.vue';
 import DiffSummary from '@/components/TreeView/DiffSummary.vue';
 import { useDiffStore } from '@/stores/diffStore';
 import FileUtils from '@/utils/file-utils';
-import useDiffExporter from '@/composables/useDiffExporter';
 import useClipboard from '@/composables/useClipboard';
 
 const diffStore = useDiffStore();

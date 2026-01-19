@@ -23,6 +23,7 @@ function parsePath(path: string): (string | number)[] {
  *
  * @param model - Monaco editor text model
  * @param path - JSON pointer path
+ * @param monacoInstance - typeof monaco
  * @returns Monaco Range or null if path not found
  */
 export function calculateRange(
