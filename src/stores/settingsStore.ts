@@ -21,6 +21,10 @@ const DEFAULT_SETTINGS: TAppSettings = {
     indentSize: 20,
     compactMode: false,
   },
+  diffPersistence: {
+    retentionDays: 30,
+    maxSessions: 100,
+  },
 };
 
 export const useSettingsStore = defineStore('settings', () => {

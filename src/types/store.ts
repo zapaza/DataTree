@@ -40,6 +40,10 @@ export interface TAppSettings {
     indentSize: number;
     compactMode: boolean;
   };
+  diffPersistence?: {
+    retentionDays: number; // default 30
+    maxSessions: number; // default 100
+  };
 }
 
 export interface TTreeFilters {

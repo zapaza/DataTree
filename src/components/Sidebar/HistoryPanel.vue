@@ -2,7 +2,7 @@
   <div class="flex flex-col h-full bg-base border-r border-base w-80 shadow-xl overflow-hidden animate-fade-in-left">
     <div class="p-4 border-b border-light flex items-center justify-between bg-secondary">
       <div class="flex items-center gap-2">
-        <div class="i-carbon-history text-blue-600 dark:text-blue-400 text-xl" />
+        <div class="i-material-symbols-history-rounded text-blue-600 dark:text-blue-400 text-xl" />
         <h2 class="font-bold text-base">Operation History</h2>
       </div>
       <div class="flex items-center gap-1">

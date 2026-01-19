@@ -9,6 +9,8 @@ import {
   transformerVariantGroup,
 } from 'unocss'
 
+const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true'
+
 export default defineConfig({
   shortcuts: [
     ['bg-base', 'bg-white dark:bg-[#1c1c1e]'],
@@ -28,13 +30,18 @@ export default defineConfig({
       warn: true,
     }),
     presetTypography(),
-    presetWebFonts({
-      fonts: {
-        sans: 'DM Sans',
-        serif: 'DM Serif Display',
-        mono: 'DM Mono',
-      },
-    }),
+    // Web fonts preset fetches CSS from Google Fonts; disable it in tests/CI to avoid network dependency
+    ...(isTestEnv
+      ? []
+      : [
+          presetWebFonts({
+            fonts: {
+              sans: 'DM Sans',
+              serif: 'DM Serif Display',
+              mono: 'DM Mono',
+            },
+          }),
+        ]),
   ],
   transformers: [
     transformerDirectives(),

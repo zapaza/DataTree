@@ -31,6 +31,7 @@ import useHistory from '@/composables/useHistory'
 import useSettings from '@/composables/useSettings'
 import '@/assets/styles/layout.css'
 import '@/assets/styles/responsive.css'
+import '@/assets/styles/diff.css'
 
 const { toast } = useClipboard()
 useHistory()

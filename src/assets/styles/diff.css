@@ -1,0 +1,45 @@
+.diff-added {
+  background-color: rgba(40, 167, 69, 0.15);
+  display: block;
+}
+
+.diff-removed {
+  background-color: rgba(215, 58, 73, 0.15);
+  display: block;
+}
+
+.diff-modified {
+  background-color: rgba(255, 193, 7, 0.15);
+  display: block;
+}
+
+.diff-gutter-added {
+  background-color: #28a745;
+  width: 4px !important;
+  margin-left: 1px;
+}
+
+.diff-gutter-removed {
+  background-color: #d73a49;
+  width: 4px !important;
+  margin-left: 1px;
+}
+
+.diff-gutter-modified {
+  background-color: #ffc107;
+  width: 4px !important;
+  margin-left: 1px;
+}
+
+/* Стили для всей строки (line decoration) */
+.diff-line-added {
+  background-color: rgba(40, 167, 69, 0.1);
+}
+
+.diff-line-removed {
+  background-color: rgba(215, 58, 73, 0.1);
+}
+
+.diff-line-modified {
+  background-color: rgba(255, 193, 7, 0.1);
+}

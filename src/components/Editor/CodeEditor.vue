@@ -137,6 +137,7 @@ import { useHistoryStore } from '@/stores/historyStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import useFormatDetector from '@/composables/useFormatDetector';
 import useMonaco from '@/composables/useMonaco';
+import useMonacoSettings from '@/composables/useMonacoSettings';
 import useFileHandler from '@/composables/useFileHandler';
 import useAnalytics from '@/composables/useAnalytics';
 import SafeJsonParser from '@/utils/parsers/json-parser';
@@ -146,6 +147,7 @@ import ErrorPanel from './ErrorPanel.vue';
 const appStore = useAppStore();
 const historyStore = useHistoryStore();
 const settingsStore = useSettingsStore();
+const { editorOptions } = useMonacoSettings();
 const { detectFormat } = useFormatDetector();
 const { initMonaco, monacoInstance } = useMonaco();
 const { handleImport } = useFileHandler();
@@ -270,18 +272,9 @@ const handleDrop = (e: DragEvent) => {
 onMounted(async () => {
   if (editorContainer.value) {
     const monacoStuff = await initMonaco(editorContainer.value, {
+      ...editorOptions.value,
       value: appStore.rawInput,
       language: appStore.format,
-      theme: settingsStore.settings.theme === 'dark' ? 'vs-dark' : 'vs',
-      automaticLayout: true,
-      minimap: { enabled: settingsStore.settings.editor.minimap },
-      scrollBeyondLastLine: true,
-      fontSize: settingsStore.settings.editor.fontSize,
-      fontFamily: settingsStore.settings.editor.fontFamily,
-      lineNumbers: settingsStore.settings.editor.showLineNumbers ? 'on' : 'off',
-      tabSize: settingsStore.settings.editor.tabSize,
-      renderWhitespace: settingsStore.settings.editor.renderWhitespace,
-      cursorStyle: settingsStore.settings.editor.cursorStyle,
       padding: { bottom: 200 }
     });
 
@@ -320,28 +313,18 @@ watch(() => appStore.rawInput, (newInput) => {
   }
 });
 
-watch(() => settingsStore.settings, (newSettings) => {
+watch(editorOptions, (newOptions) => {
   if (editor && monacoInstance.value) {
     editor.updateOptions({
-      fontSize: newSettings.editor.fontSize,
-      fontFamily: newSettings.editor.fontFamily,
-      lineNumbers: newSettings.editor.showLineNumbers ? 'on' : 'off',
-      minimap: { enabled: newSettings.editor.minimap },
-      tabSize: newSettings.editor.tabSize,
-      renderWhitespace: newSettings.editor.renderWhitespace,
-      cursorStyle: newSettings.editor.cursorStyle,
+      ...newOptions,
       padding: { bottom: 200 }
     });
 
-    monacoInstance.value.editor.setTheme(newSettings.theme === 'dark' ? 'vs-dark' : 'vs');
+    if (newOptions.theme) {
+      monacoInstance.value.editor.setTheme(newOptions.theme);
+    }
   }
 }, { deep: true });
-
-onBeforeUnmount(() => {
-  if (editor) {
-    editor.dispose();
-  }
-});
 </script>
 
 

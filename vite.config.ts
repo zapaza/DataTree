@@ -1,10 +1,19 @@
 import { fileURLToPath, URL } from 'node:url'
+import { createHash } from 'node:crypto'
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import UnoCSS from 'unocss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
+
+// Some dependencies (notably @vitejs/plugin-vue in newer versions) rely on
+// `globalThis.crypto.hash(...)`. Ensure it's available in Node environments.
+const g = globalThis as any
+if (!g.crypto) g.crypto = {}
+if (typeof g.crypto.hash !== 'function') {
+  g.crypto.hash = (algorithm: string, data: Uint8Array) => createHash(algorithm).update(data).digest()
+}
 
 // https://vite.dev/config/
 export default defineConfig({
