@@ -37,10 +37,12 @@ export default class LCS {
 
     for (let i = 1; i <= n; i++) {
       for (let j = 1; j <= m; j++) {
-        if (isEqual(a[i - 1], b[j - 1])) {
-          matrix[i][j] = matrix[i - 1][j - 1] + 1;
+        const itemA = a[i - 1]!;
+        const itemB = b[j - 1]!;
+        if (isEqual(itemA, itemB)) {
+          matrix[i]![j] = matrix[i - 1]![j - 1]! + 1;
         } else {
-          matrix[i][j] = Math.max(matrix[i - 1][j], matrix[i][j - 1]);
+          matrix[i]![j] = Math.max(matrix[i - 1]![j]!, matrix[i]![j - 1]!);
         }
       }
     }
@@ -50,16 +52,21 @@ export default class LCS {
     let j = m;
 
     while (i > 0 || j > 0) {
-      if (i > 0 && j > 0 && isEqual(a[i - 1], b[j - 1])) {
-        result.unshift({ type: 'unchanged', item: a[i - 1], indexA: i - 1, indexB: j - 1 });
+      const itemA = i > 0 ? a[i - 1]! : undefined;
+      const itemB = j > 0 ? b[j - 1]! : undefined;
+
+      if (i > 0 && j > 0 && itemA !== undefined && itemB !== undefined && isEqual(itemA, itemB)) {
+        result.unshift({ type: 'unchanged', item: itemA, indexA: i - 1, indexB: j - 1 });
         i--;
         j--;
-      } else if (j > 0 && (i === 0 || matrix[i][j - 1] >= matrix[i - 1][j])) {
-        result.unshift({ type: 'added', item: b[j - 1], indexA: -1, indexB: j - 1 });
+      } else if (j > 0 && (i === 0 || matrix[i]![j - 1]! >= matrix[i - 1]![j]!)) {
+        result.unshift({ type: 'added', item: itemB!, indexA: -1, indexB: j - 1 });
         j--;
+      } else if (i > 0) {
+        result.unshift({ type: 'removed', item: itemA!, indexA: i - 1, indexB: -1 });
+        i--;
       } else {
-        result.unshift({ type: 'removed', item: a[i - 1], indexA: i - 1, indexB: -1 });
-        i--;
+        break;
       }
     }
 
@@ -77,22 +84,24 @@ export default class LCS {
     const minLen = Math.min(a.length, b.length);
 
     for (let i = 0; i < minLen; i++) {
-      if (isEqual(a[i], b[i])) {
-        result.push({ type: 'unchanged', item: a[i], indexA: i, indexB: i });
+      const itemA = a[i]!;
+      const itemB = b[i]!;
+      if (isEqual(itemA, itemB)) {
+        result.push({ type: 'unchanged', item: itemA, indexA: i, indexB: i });
       } else {
         // Считаем это модификацией (removed + added)
-        result.push({ type: 'removed', item: a[i], indexA: i, indexB: -1 });
-        result.push({ type: 'added', item: b[i], indexA: -1, indexB: i });
+        result.push({ type: 'removed', item: itemA, indexA: i, indexB: -1 });
+        result.push({ type: 'added', item: itemB, indexA: -1, indexB: i });
       }
     }
 
     if (a.length > b.length) {
       for (let i = minLen; i < a.length; i++) {
-        result.push({ type: 'removed', item: a[i], indexA: i, indexB: -1 });
+        result.push({ type: 'removed', item: a[i]!, indexA: i, indexB: -1 });
       }
     } else if (b.length > a.length) {
       for (let i = minLen; i < b.length; i++) {
-        result.push({ type: 'added', item: b[i], indexA: -1, indexB: i });
+        result.push({ type: 'added', item: b[i]!, indexA: -1, indexB: i });
       }
     }
 
