@@ -6,7 +6,7 @@
 
 Professional tool for visualizing, analyzing, and comparing JSON and XML structures directly in the browser. Built using modern technologies and focused on performance and developer convenience.
 
-**Live Demo:** [https://courageous-zuccutto-88e1c5.netlify.app](https://courageous-zuccutto-88e1c5.netlify.app)
+**Live Demo:** [datatree.space-dev.tech](https://datatree.space-dev.tech)
 
 ![DataTree Interface](./public/d08d4c58df1545545114323379e35313_1767894518.png)
 
