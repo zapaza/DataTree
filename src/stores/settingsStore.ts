@@ -8,7 +8,7 @@ const DEFAULT_SETTINGS: TAppSettings = {
   theme: 'light',
   editor: {
     fontSize: 14,
-    fontFamily: 'Fira Code, monospace',
+    fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
     showLineNumbers: true,
     minimap: false,
     tabSize: 2,
@@ -25,12 +25,44 @@ const DEFAULT_SETTINGS: TAppSettings = {
     retentionDays: 30,
     maxSessions: 100,
   },
+  privacy: {
+    analyticsEnabled: false,
+  },
+};
+
+const mergeWithDefaults = (settings: Partial<TAppSettings>): TAppSettings => ({
+  ...DEFAULT_SETTINGS,
+  ...settings,
+  editor: {
+    ...DEFAULT_SETTINGS.editor,
+    ...settings.editor,
+  },
+  tree: {
+    ...DEFAULT_SETTINGS.tree,
+    ...settings.tree,
+  },
+  diffPersistence: {
+    ...DEFAULT_SETTINGS.diffPersistence!,
+    ...settings.diffPersistence,
+  },
+  privacy: {
+    ...DEFAULT_SETTINGS.privacy,
+    ...settings.privacy,
+  },
+});
+
+const loadSettings = (): TAppSettings => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+    return mergeWithDefaults(JSON.parse(saved));
+  } catch {
+    return JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+  }
 };
 
 export const useSettingsStore = defineStore('settings', () => {
-  const settings = ref<TAppSettings>(
-    JSON.parse(localStorage.getItem(STORAGE_KEY) || JSON.stringify(DEFAULT_SETTINGS))
-  );
+  const settings = ref<TAppSettings>(loadSettings());
 
   const updateSettings = (newSettings: Partial<TAppSettings>) => {
     settings.value = { ...settings.value, ...newSettings };
@@ -42,6 +74,10 @@ export const useSettingsStore = defineStore('settings', () => {
 
   const updateTreeSettings = (newSettings: Partial<TAppSettings['tree']>) => {
     settings.value.tree = { ...settings.value.tree, ...newSettings };
+  };
+
+  const updatePrivacySettings = (newSettings: Partial<TAppSettings['privacy']>) => {
+    settings.value.privacy = { ...settings.value.privacy, ...newSettings };
   };
 
   const toggleTheme = () => {
@@ -61,7 +97,7 @@ export const useSettingsStore = defineStore('settings', () => {
       const imported = JSON.parse(json);
       // Простая валидация структуры (можно добавить Zod для надежности)
       if (imported.theme && imported.editor && imported.tree) {
-        settings.value = imported;
+        settings.value = mergeWithDefaults(imported);
         return true;
       }
     } catch (e) {
@@ -84,6 +120,7 @@ export const useSettingsStore = defineStore('settings', () => {
     updateSettings,
     updateEditorSettings,
     updateTreeSettings,
+    updatePrivacySettings,
     toggleTheme,
     resetSettings,
     exportSettings,

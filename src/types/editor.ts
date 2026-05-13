@@ -1,3 +1,5 @@
+import type { JsonValue } from '@/types/json';
+
 export type TDataType = 'json' | 'xml';
 
 export interface TErrorPosition {
@@ -18,7 +20,7 @@ export interface TEditorState {
 
 export interface IParseResult {
   success: boolean;
-  data?: any;
+  data?: JsonValue;
   error?: {
     message: string;
     line: number;

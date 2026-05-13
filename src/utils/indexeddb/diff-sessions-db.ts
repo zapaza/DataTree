@@ -1,4 +1,5 @@
 import type { TDataType } from '@/types/editor'
+import type { TDiffResult, TDiffTreeNode } from '@/types/diff'
 
 export type TDiffSessionId = string
 
@@ -15,8 +16,8 @@ export interface TDiffSession {
   showOnlyChanges: boolean
 
   // Optional cached diff (may be null for huge files)
-  diffResult?: any | null
-  diffTree?: any | null
+  diffResult?: TDiffResult | null
+  diffTree?: TDiffTreeNode | null
 
   sizeBytes: number
 }
@@ -38,7 +39,7 @@ const STORE_SESSIONS = 'diff_sessions'
 const STORE_BACKUPS = 'diff_backups'
 const STORE_META = 'meta'
 
-type TMetaRecord = { key: string; value: any }
+type TMetaRecord = { key: string; value: unknown }
 
 function requestToPromise<T>(req: IDBRequest<T>): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -91,7 +92,7 @@ export class DiffSessionsDB {
     })
   }
 
-  async getMeta<T = any>(key: string): Promise<T | null> {
+  async getMeta<T = unknown>(key: string): Promise<T | null> {
     const db = await this.init()
     const tx = db.transaction([STORE_META], 'readonly')
     const store = tx.objectStore(STORE_META)
@@ -100,7 +101,7 @@ export class DiffSessionsDB {
     return rec ? (rec.value as T) : null
   }
 
-  async setMeta(key: string, value: any): Promise<void> {
+  async setMeta(key: string, value: unknown): Promise<void> {
     const db = await this.init()
     const tx = db.transaction([STORE_META], 'readwrite')
     tx.objectStore(STORE_META).put({ key, value } satisfies TMetaRecord)
@@ -236,4 +237,3 @@ export class DiffSessionsDB {
 }
 
 export const diffSessionsDB = new DiffSessionsDB()
-
