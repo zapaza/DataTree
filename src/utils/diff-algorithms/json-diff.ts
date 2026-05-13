@@ -1,10 +1,12 @@
 import type { TDiffResult, TDiffOptions, TDiffNode, TJsonPatchOperation } from '@/types/diff';
+import type { JsonArray, JsonObject, JsonValue } from '@/types/json';
+import { isJsonObject } from '@/types/json';
 import LCS from './lcs';
 
 /**
  * Основная функция для сравнения двух JSON структур.
  */
-export function diffJson(left: any, right: any, options: TDiffOptions = {}): TDiffResult {
+export function diffJson(left: JsonValue, right: JsonValue, options: TDiffOptions = {}): TDiffResult {
   const { arrayOrderMatters = true, ignoreTypeDiff = false } = options;
   const changes: TDiffNode[] = [];
   const patch: TJsonPatchOperation[] = [];
@@ -18,7 +20,7 @@ export function diffJson(left: any, right: any, options: TDiffOptions = {}): TDi
   /**
    * Рекурсивное сравнение значений.
    */
-  function compare(a: any, b: any, path: string) {
+  function compare(a: JsonValue, b: JsonValue, path: string) {
     // Проверка на идентичность
     if (isEqual(a, b, ignoreTypeDiff)) {
       stats.unchanged++;
@@ -35,7 +37,7 @@ export function diffJson(left: any, right: any, options: TDiffOptions = {}): TDi
     }
 
     // Сравнение массивов
-    if (Array.isArray(a)) {
+    if (Array.isArray(a) && Array.isArray(b)) {
       if (arrayOrderMatters) {
         compareArraysOrdered(a, b, path);
       } else {
@@ -45,7 +47,7 @@ export function diffJson(left: any, right: any, options: TDiffOptions = {}): TDi
     }
 
     // Сравнение объектов
-    if (typeof a === 'object') {
+    if (isJsonObject(a) && isJsonObject(b)) {
       compareObjects(a, b, path);
       return;
     }
@@ -59,7 +61,7 @@ export function diffJson(left: any, right: any, options: TDiffOptions = {}): TDi
   /**
    * Сравнение объектов по ключам.
    */
-  function compareObjects(a: Record<string, any>, b: Record<string, any>, path: string) {
+  function compareObjects(a: JsonObject, b: JsonObject, path: string) {
     const keysA = Object.keys(a);
     const keysB = Object.keys(b);
     const allKeys = new Set([...keysA, ...keysB]);
@@ -73,10 +75,10 @@ export function diffJson(left: any, right: any, options: TDiffOptions = {}): TDi
         patch.push({ op: 'remove', path: currentPath });
       } else if (!(key in a)) {
         stats.added++;
-        changes.push({ type: 'added', path: currentPath, newValue: b[key] });
-        patch.push({ op: 'add', path: currentPath, value: b[key] });
+        changes.push({ type: 'added', path: currentPath, newValue: b[key]! });
+        patch.push({ op: 'add', path: currentPath, value: b[key]! });
       } else {
-        compare(a[key], b[key], currentPath);
+        compare(a[key]!, b[key]!, currentPath);
       }
     });
   }
@@ -84,12 +86,12 @@ export function diffJson(left: any, right: any, options: TDiffOptions = {}): TDi
   /**
    * Сравнение массивов с учетом порядка (LCS).
    */
-  function compareArraysOrdered(a: any[], b: any[], path: string) {
+  function compareArraysOrdered(a: JsonArray, b: JsonArray, path: string) {
     // Оптимизация: если массивы идентичны, пропускаем LCS
     if (a.length === b.length) {
       let identical = true;
       for (let i = 0; i < a.length; i++) {
-        if (!isEqual(a[i], b[i], ignoreTypeDiff)) {
+        if (!isEqual(a[i]!, b[i]!, ignoreTypeDiff)) {
           identical = false;
           break;
         }
@@ -140,7 +142,7 @@ export function diffJson(left: any, right: any, options: TDiffOptions = {}): TDi
   /**
    * Сравнение массивов без учета порядка.
    */
-  function compareArraysUnordered(a: any[], b: any[], path: string) {
+  function compareArraysUnordered(a: JsonArray, b: JsonArray, path: string) {
     // Упрощенная логика: считаем количество вхождений каждого элемента.
     // Для сложных объектов это может быть дорого.
     const usedIndicesB = new Set<number>();
@@ -150,7 +152,7 @@ export function diffJson(left: any, right: any, options: TDiffOptions = {}): TDi
       let found = false;
 
       for (let indexB = 0; indexB < b.length; indexB++) {
-        if (!usedIndicesB.has(indexB) && isEqual(itemA, b[indexB], ignoreTypeDiff)) {
+        if (!usedIndicesB.has(indexB) && isEqual(itemA, b[indexB]!, ignoreTypeDiff)) {
           usedIndicesB.add(indexB);
           stats.unchanged++;
           changes.push({ type: 'unchanged', path: currentPathA });
@@ -188,11 +190,10 @@ export function diffJson(left: any, right: any, options: TDiffOptions = {}): TDi
 /**
  * Глубокое сравнение на равенство.
  */
-function isEqual(a: any, b: any, ignoreTypeDiff: boolean): boolean {
+function isEqual(a: JsonValue, b: JsonValue, ignoreTypeDiff: boolean): boolean {
   if (a === b) return true;
 
   if (ignoreTypeDiff) {
-    // eslint-disable-next-line eqeqeq
     if (a == b && typeof a !== 'object' && typeof b !== 'object') return true;
   }
 
@@ -202,17 +203,17 @@ function isEqual(a: any, b: any, ignoreTypeDiff: boolean): boolean {
   if (Array.isArray(a)) {
     if (!Array.isArray(b) || a.length !== b.length) return false;
     for (let i = 0; i < a.length; i++) {
-      if (!isEqual(a[i], b[i], ignoreTypeDiff)) return false;
+      if (!isEqual(a[i]!, b[i]!, ignoreTypeDiff)) return false;
     }
     return true;
   }
 
-  if (typeof a === 'object') {
+  if (isJsonObject(a) && isJsonObject(b)) {
     const keysA = Object.keys(a);
     const keysB = Object.keys(b);
     if (keysA.length !== keysB.length) return false;
     for (const key of keysA) {
-      if (!keysB.includes(key) || !isEqual(a[key], b[key], ignoreTypeDiff)) return false;
+      if (!keysB.includes(key) || !isEqual(a[key]!, b[key]!, ignoreTypeDiff)) return false;
     }
     return true;
   }

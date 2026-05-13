@@ -1,4 +1,5 @@
 import { JsonErrorHandler, type ParseResult } from '@/utils/parsers/json-error-handler';
+import type { JsonValue } from '@/types/json';
 
 /**
  * Utility class for safe JSON parsing with error analysis and auto-fix capabilities.
@@ -16,12 +17,12 @@ export default class SafeJsonParser {
     }
 
     try {
-      const data = JSON.parse(json);
+      const data = JSON.parse(json) as JsonValue;
       return { success: true, data };
-    } catch (e: any) {
+    } catch (e: unknown) {
       return {
         success: false,
-        error: JsonErrorHandler.analyzeError(e, json)
+        error: JsonErrorHandler.analyzeError(e instanceof Error ? e : new Error('Invalid JSON'), json)
       };
     }
   }

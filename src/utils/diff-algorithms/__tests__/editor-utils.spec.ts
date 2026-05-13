@@ -27,7 +27,13 @@ const modelMock = {
       lineNumber: lines.length,
       column: lines[lines.length - 1].length + 1
     };
-  }
+  },
+  getLineCount: () => JSON.stringify({
+    a: 1,
+    b: {
+      c: [1, 2, 3]
+    }
+  }, null, 2).split('\n').length
 } as any;
 
 describe('editor-utils', () => {

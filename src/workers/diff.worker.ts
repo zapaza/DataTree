@@ -1,18 +1,20 @@
 import diffJson from '@/utils/diff-algorithms/json-diff'
 import buildDiffTree from '@/utils/diff-algorithms/diff-tree-builder'
+import type { TDiffResult, TDiffTreeNode } from '@/types/diff'
+import type { JsonValue } from '@/types/json'
 
 type TDiffWorkerRequest = {
   id: number
-  left: any
-  right: any
+  left: JsonValue
+  right: JsonValue
 }
 
 type TDiffWorkerResponse =
   | {
       id: number
       success: true
-      diffResult: any
-      diffTree: any
+      diffResult: TDiffResult
+      diffTree: TDiffTreeNode
       computeTime: number
     }
   | {
@@ -39,15 +41,14 @@ self.onmessage = (e: MessageEvent<TDiffWorkerRequest>) => {
       computeTime: Number((end - start).toFixed(2)),
     }
     self.postMessage(msg)
-  } catch (err: any) {
+  } catch (err: unknown) {
     const end = performance.now()
     const msg: TDiffWorkerResponse = {
       id,
       success: false,
-      error: { message: err?.message || 'Diff worker error' },
+      error: { message: err instanceof Error ? err.message : 'Diff worker error' },
       computeTime: Number((end - start).toFixed(2)),
     }
     self.postMessage(msg)
   }
 }
-

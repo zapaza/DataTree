@@ -1,8 +1,9 @@
 import type { TErrorPosition } from '@/types/editor';
+import type { JsonValue } from '@/types/json';
 
 export interface ParseResult {
   success: boolean;
-  data?: any;
+  data?: JsonValue;
   error?: {
     message: string;
     line: number;

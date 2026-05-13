@@ -3,27 +3,32 @@ import XmlParser from '@/utils/parsers/xml-parser';
 import XmlToJsonConverter from '@/utils/parsers/xml-to-json';
 import TreeTransformer from '@/utils/tree-transformer';
 import type { TDataType } from '@/types/editor';
+import type { TParseError, TTreeNode } from '@/types/store';
 
 self.onmessage = (e: MessageEvent) => {
   const { input, format }: { input: string, format: TDataType } = e.data;
 
   const startTime = performance.now();
-  let transformedData: any = null;
-  let error: any = null;
+  let transformedData: TTreeNode | null = null;
+  let error: TParseError | null = null;
 
   if (format === 'json') {
     const result = SafeJsonParser.parse(input);
     if (result.success) {
-      transformedData = TreeTransformer.transform(result.data);
+      transformedData = TreeTransformer.transform(result.data ?? null);
     } else {
-      error = result.error;
+      error = result.error
+        ? { ...result.error, severity: 'error' }
+        : null;
     }
   } else {
     const result = XmlParser.parse(input);
     if (result.success) {
-      transformedData = XmlToJsonConverter.convert(result.data);
+      transformedData = XmlToJsonConverter.convert(result.data ?? null);
     } else {
-      error = result.error;
+      error = result.error
+        ? { ...result.error, severity: 'error' }
+        : null;
     }
   }
 
