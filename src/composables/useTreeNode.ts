@@ -12,6 +12,8 @@ export default function useTreeNode(
   nodeRef: MaybeRefOrGetter<TTreeNode>,
   pathRef: MaybeRefOrGetter<string>
 ) {
+  const path = computed(() => toValue(pathRef));
+
   const isExpandable = computed(() => {
     const node = toValue(nodeRef);
     return (node.type === 'object' || node.type === 'array') && (node.children?.length ?? 0) > 0;
@@ -53,6 +55,7 @@ export default function useTreeNode(
     isExpandable,
     iconClass,
     valueColorClass,
-    formattedValue
+    formattedValue,
+    path
   };
 }

@@ -28,7 +28,7 @@ export default function useDiffEditor() {
     diffs.forEach(diff => {
       // Determine if this change should be highlighted on the current side
       let shouldHighlight = false;
-      let type = diff.type;
+      const type = diff.type;
 
       if (side === 'left') {
         shouldHighlight = diff.type === 'removed' || diff.type === 'modified';

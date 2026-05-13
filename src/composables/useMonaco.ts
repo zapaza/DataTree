@@ -1,12 +1,26 @@
-import loader from '@monaco-editor/loader';
-import type * as monaco from 'monaco-editor';
+import * as monaco from 'monaco-editor/esm/vs/editor/edcore.main.js';
+import 'monaco-editor/esm/vs/language/json/monaco.contribution.js';
+import 'monaco-editor/esm/vs/basic-languages/xml/xml.contribution.js';
+import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
+import type * as Monaco from 'monaco-editor';
 import { shallowRef, onBeforeUnmount, onUnmounted } from 'vue';
 
-loader.config({
-  paths: {
-    vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs'
-  }
-});
+type MonacoWorkerEnvironment = typeof globalThis & {
+  MonacoEnvironment?: {
+    getWorker: (_moduleId: string, label: string) => Worker;
+  };
+};
+
+(globalThis as MonacoWorkerEnvironment).MonacoEnvironment = {
+  getWorker(_moduleId: string, label: string) {
+    if (label === 'json') {
+      return new JsonWorker();
+    }
+
+    return new EditorWorker();
+  },
+};
 
 /**
  * Composable for initializing and managing a Monaco Editor instance.
@@ -15,8 +29,8 @@ loader.config({
  * @returns Object with init function and a reactive reference to the monaco namespace.
  */
 export default function useMonaco() {
-  const monacoInstance = shallowRef<typeof monaco | null>(null);
-  let editorInstance: monaco.editor.IStandaloneCodeEditor | null = null;
+  const monacoInstance = shallowRef<typeof Monaco | null>(null);
+  let editorInstance: Monaco.editor.IStandaloneCodeEditor | null = null;
   let isUnmounted = false;
 
   /**
@@ -27,11 +41,10 @@ export default function useMonaco() {
    */
   const initMonaco = async (
     container: HTMLElement,
-    options: monaco.editor.IStandaloneEditorConstructionOptions
+    options: Monaco.editor.IStandaloneEditorConstructionOptions
   ) => {
     try {
-      // Загружаем Monaco через loader
-      const monacoNamespace = await loader.init();
+      const monacoNamespace = monaco as unknown as typeof Monaco;
 
       if (isUnmounted) {
         return { monaco: monacoNamespace, editor: null };

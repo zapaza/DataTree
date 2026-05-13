@@ -27,6 +27,10 @@ import { ref, onMounted, onUnmounted, watch, nextTick, computed, type PropType }
 type TTooltipPosition = 'top' | 'bottom' | 'left' | 'right';
 type TTooltipTrigger = 'hover' | 'click' | 'focus';
 
+defineOptions({
+  name: 'DataTreeTooltip'
+});
+
 const props = defineProps({
   text: {
     type: String,

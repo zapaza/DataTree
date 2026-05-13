@@ -10,6 +10,11 @@ interface TooltipOptions {
 
 const tooltipInstances = new Map<HTMLElement, { container: HTMLElement; show: () => void; hide: () => void }>();
 
+type TTooltipExposed = {
+  show: () => void;
+  hide: () => void;
+};
+
 const vTooltip: Directive = {
   mounted(el: HTMLElement, binding: DirectiveBinding) {
     const options: TooltipOptions = typeof binding.value === 'string'
@@ -27,8 +32,7 @@ const vTooltip: Directive = {
 
     render(vnode, container);
 
-    // @ts-ignore
-    const component = vnode.component?.exposed;
+    const component = vnode.component?.exposed as TTooltipExposed | undefined;
 
     if (component) {
       tooltipInstances.set(el, {
