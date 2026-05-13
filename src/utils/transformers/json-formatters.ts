@@ -1,4 +1,5 @@
 import SafeJsonParser from '@/utils/parsers/json-parser';
+import type { JsonObject, JsonValue } from '@/types/json';
 
 export default class JsonFormatter {
   public static format(jsonString: string): string {
@@ -26,7 +27,7 @@ export default class JsonFormatter {
     return jsonString;
   }
 
-  private static sortObject(obj: any): any {
+  private static sortObject(obj: JsonValue): JsonValue {
     if (obj === null || typeof obj !== 'object') {
       return obj;
     }
@@ -35,11 +36,11 @@ export default class JsonFormatter {
       return obj.map(item => this.sortObject(item));
     }
 
-    const sortedObj: any = {};
+    const sortedObj: JsonObject = {};
     Object.keys(obj)
       .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base', numeric: true }))
       .forEach(key => {
-        sortedObj[key] = this.sortObject(obj[key]);
+        sortedObj[key] = this.sortObject(obj[key]!);
       });
 
     return sortedObj;

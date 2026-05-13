@@ -46,6 +46,7 @@ export default class ErrorFormatter {
   }
 
   private static enhanceXmlError(error: TParseError, content: string) {
+    void content;
     const msg = error.message.toLowerCase();
 
     if (msg.includes('closing tag') && msg.includes('expected')) {

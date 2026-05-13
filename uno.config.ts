@@ -4,12 +4,9 @@ import {
   presetIcons,
   presetTypography,
   presetWind4,
-  presetWebFonts,
   transformerDirectives,
   transformerVariantGroup,
 } from 'unocss'
-
-const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true'
 
 export default defineConfig({
   shortcuts: [
@@ -22,6 +19,13 @@ export default defineConfig({
     ['text-muted', 'text-gray-500 dark:text-[#a1a1a6]'],
     ['text-light', 'text-gray-400 dark:text-[#6e6e73]'],
   ],
+  theme: {
+    fontFamily: {
+      sans: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      mono: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
+      serif: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
+    },
+  },
   presets: [
     presetWind4(),
     presetAttributify(),
@@ -30,18 +34,6 @@ export default defineConfig({
       warn: true,
     }),
     presetTypography(),
-    // Web fonts preset fetches CSS from Google Fonts; disable it in tests/CI to avoid network dependency
-    ...(isTestEnv
-      ? []
-      : [
-          presetWebFonts({
-            fonts: {
-              sans: 'DM Sans',
-              serif: 'DM Serif Display',
-              mono: 'DM Mono',
-            },
-          }),
-        ]),
   ],
   transformers: [
     transformerDirectives(),

@@ -1,6 +1,6 @@
 # DataTree - Professional JSON/XML Visualizer & Diff Tool
 
-![Version](https://img.shields.io/badge/version-1.1.0-blue)
+![Version](https://img.shields.io/badge/version-0.1.0--alpha-blue)
 ![Vue](https://img.shields.io/badge/vue-3.5-green)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
@@ -36,6 +36,7 @@ Professional tool for visualizing, analyzing, and comparing JSON and XML structu
 - **Document Statistics**: node count, depth, type distribution, and parsing time.
 
 ### ⚡ Performance and Offline
+- **Local-only Processing**: JSON/XML content is parsed, visualized, transformed, and stored in your browser.
 - **Web Workers**: Parsing and Diffing are performed in background threads to keep the UI responsive.
 - **Smart Caching**: In-memory caching for diff results to ensure instant navigation.
 - **Virtual Scrolling**: Smooth operation with data up to 10 MB (600k+ nodes).
@@ -55,7 +56,7 @@ Professional tool for visualizing, analyzing, and comparing JSON and XML structu
 ## 🚀 Quick Start
 
 ### Online Usage
-1. Open [courageous-zuccutto-88e1c5.netlify.app](https://courageous-zuccutto-88e1c5.netlify.app)
+1. Open [datatree.space-dev.tech](https://datatree.space-dev.tech)
 2. Paste text or drag a file into the editor area.
 3. Explore the structure in the visualizer on the right.
 
@@ -79,7 +80,9 @@ npm run build
 ```
 
 ## 📈 Analytics and Privacy
-The application uses anonymized analytics to collect feature usage data (e.g., converter usage frequency). We do not collect or transmit the content of your data.
+DataTree is local-first: your JSON/XML payloads are processed in the browser and are not uploaded to a server for parsing, visualization, diffing, conversion, or history storage.
+
+Analytics are opt-in and disabled by default. If enabled in Settings, DataTree loads Yandex Metrica only for anonymous product usage events such as page views and feature actions. Payload content is never sent, and Webvisor/clickmap session recording is disabled.
 
 ## 📄 License
 MIT © 2026 DataTree Team
