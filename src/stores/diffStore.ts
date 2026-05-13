@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, watch, toRaw } from 'vue';
+import { ref, watch, toRaw, type Ref } from 'vue';
 import SafeJsonParser from '@/utils/parsers/json-parser';
 import XmlParser from '@/utils/parsers/xml-parser';
 import diffJson from '@/utils/diff-algorithms/json-diff';
@@ -7,10 +7,39 @@ import buildDiffTree from '@/utils/diff-algorithms/diff-tree-builder';
 import debounce from '@/utils/debounce';
 import type { TDataType, IParseResult } from '@/types/editor';
 import type { TDiffResult, TDiffTreeNode } from '@/types/diff';
+import type { JsonValue } from '@/types/json';
 import { diffSessionsDB, type TDiffSession, type TDiffSessionId } from '@/utils/indexeddb/diff-sessions-db';
 import { useSettingsStore } from '@/stores/settingsStore';
 
 export type TDiffMode = 'normal' | 'diff';
+type TPanelParseError = NonNullable<IParseResult['error']>;
+
+type TDiffPanelState = {
+  raw: string;
+  format: TDataType;
+  parsed: JsonValue | null;
+  valid: boolean;
+  error: TPanelParseError | null;
+};
+
+type TDiffWorkerResponse =
+  | {
+      id: number;
+      success: true;
+      diffResult: TDiffResult;
+      diffTree: TDiffTreeNode;
+      computeTime: number;
+    }
+  | {
+      id: number;
+      success: false;
+      error: { message: string };
+      computeTime: number;
+    };
+
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  return error instanceof Error ? error.message : fallback;
+};
 
 /**
  * Store for managing JSON/XML comparison (diff) state.
@@ -22,21 +51,21 @@ export const useDiffStore = defineStore('diff', () => {
   const left = ref({
     raw: '',
     format: 'json' as TDataType,
-    parsed: null as any,
+    parsed: null,
     valid: true,
-    error: null as any
-  });
+    error: null
+  }) as Ref<TDiffPanelState>;
 
   const right = ref({
     raw: '',
     format: 'json' as TDataType,
-    parsed: null as any,
+    parsed: null,
     valid: true,
-    error: null as any
-  });
+    error: null
+  }) as Ref<TDiffPanelState>;
 
-  const diffResult = ref<TDiffResult | null>(null);
-  const diffTree = ref<TDiffTreeNode | null>(null);
+  const diffResult = ref(null) as Ref<TDiffResult | null>;
+  const diffTree = ref(null) as Ref<TDiffTreeNode | null>;
   const isComputingDiff = ref(false);
   const diffComputeTime = ref(0);
   const diffError = ref<string | null>(null);
@@ -60,8 +89,8 @@ export const useDiffStore = defineStore('diff', () => {
   const showOnlyChanges = ref(false);
   const currentChangeIndex = ref(-1);
 
-  const getRetentionDays = () => (settingsStore.settings as any)?.diffPersistence?.retentionDays ?? 30;
-  const getMaxSessions = () => (settingsStore.settings as any)?.diffPersistence?.maxSessions ?? 100;
+  const getRetentionDays = () => settingsStore.settings.diffPersistence?.retentionDays ?? 30;
+  const getMaxSessions = () => settingsStore.settings.diffPersistence?.maxSessions ?? 100;
 
   /**
    * Universal parsing function
@@ -85,9 +114,10 @@ export const useDiffStore = defineStore('diff', () => {
     return `diff_${Date.now()}_${Math.random().toString(16).slice(2)}`;
   };
 
-  const estimateSizeBytes = (obj: any): number => {
+  const estimateSizeBytes = (obj: unknown): number => {
     try {
       const json = JSON.stringify(obj);
+      if (!json) return 0;
       return new Blob([json]).size;
     } catch {
       return 0;
@@ -96,8 +126,8 @@ export const useDiffStore = defineStore('diff', () => {
 
   const buildSessionPayload = (): Omit<TDiffSession, 'id' | 'createdAt' | 'updatedAt' | 'title'> => {
     // Cache diff only if it's small enough (avoid exploding storage for huge diffs)
-    let cachedDiffResult: any | null = null;
-    let cachedDiffTree: any | null = null;
+    let cachedDiffResult: TDiffResult | null = null;
+    let cachedDiffTree: TDiffTreeNode | null = null;
 
     if (diffResult.value && diffTree.value) {
       const size = estimateSizeBytes(diffResult.value);
@@ -166,8 +196,8 @@ export const useDiffStore = defineStore('diff', () => {
       });
 
       lastSavedAt.value = now;
-    } catch (e: any) {
-      lastSaveError.value = e?.message || 'Failed to save session';
+    } catch (e: unknown) {
+      lastSaveError.value = getErrorMessage(e, 'Failed to save session');
     } finally {
       isSaving.value = false;
     }
@@ -193,8 +223,8 @@ export const useDiffStore = defineStore('diff', () => {
       showOnlyChanges.value = session.showOnlyChanges;
 
       // If cached diff is present, restore immediately; otherwise compute in background via watchers
-      diffResult.value = (session.diffResult as any) || null;
-      diffTree.value = (session.diffTree as any) || null;
+      diffResult.value = session.diffResult || null;
+      diffTree.value = session.diffTree || null;
 
       updateValidation();
       computeDiff();
@@ -260,8 +290,8 @@ export const useDiffStore = defineStore('diff', () => {
     left.value.error = leftRes.error || null;
     right.value.error = rightRes.error || null;
 
-    left.value.parsed = leftRes.success ? leftRes.data : null;
-    right.value.parsed = rightRes.success ? rightRes.data : null;
+    left.value.parsed = leftRes.success ? (leftRes.data ?? null) : null;
+    right.value.parsed = rightRes.success ? (rightRes.data ?? null) : null;
 
     return { leftRes, rightRes };
   };
@@ -316,9 +346,9 @@ export const useDiffStore = defineStore('diff', () => {
         currentChangeIndex.value = -1;
 
         diffCache.set(cacheKey, { result, tree });
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error('Failed to compute diff:', e);
-        diffError.value = e?.message || 'Failed to compute diff';
+        diffError.value = getErrorMessage(e, 'Failed to compute diff');
         diffResult.value = null;
         diffTree.value = null;
       }
@@ -339,20 +369,20 @@ export const useDiffStore = defineStore('diff', () => {
       type: 'module',
     });
 
-    diffWorker.onmessage = (e) => {
-      const { id, success, diffResult: result, diffTree: tree, computeTime, error } = e.data || {};
-      if (id !== requestId) {
+    diffWorker.onmessage = (e: MessageEvent<TDiffWorkerResponse>) => {
+      const message = e.data;
+      if (message.id !== requestId) {
         return;
       }
 
-      diffComputeTime.value = computeTime || 0;
-      if (success) {
-        diffResult.value = result;
-        diffTree.value = tree;
+      diffComputeTime.value = message.computeTime || 0;
+      if (message.success) {
+        diffResult.value = message.diffResult;
+        diffTree.value = message.diffTree;
         currentChangeIndex.value = -1;
-        diffCache.set(cacheKey, { result, tree });
+        diffCache.set(cacheKey, { result: message.diffResult, tree: message.diffTree });
       } else {
-        diffError.value = error?.message || 'Failed to compute diff';
+        diffError.value = message.error.message || 'Failed to compute diff';
         diffResult.value = null;
         diffTree.value = null;
       }

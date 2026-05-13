@@ -1,9 +1,11 @@
+import type { JsonValue } from '@/types/json';
+
 export type TTreeNodeType = 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null';
 
 export interface TTreeNode {
   type: TTreeNodeType;
   key: string;
-  value: any;
+  value: JsonValue;
   children?: TTreeNode[];
 }
 
@@ -41,6 +43,9 @@ export interface TAppSettings {
   diffPersistence?: {
     retentionDays: number; // default 30
     maxSessions: number; // default 100
+  };
+  privacy: {
+    analyticsEnabled: boolean;
   };
 }
 

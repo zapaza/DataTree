@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia';
-import { ref, computed, watch } from 'vue';
+import { ref, shallowRef, computed, watch } from 'vue';
 import debounce from '@/utils/debounce';
 import type { TDataType } from '@/types/editor';
 import type { TTreeNode, TParseError, TTreeFilters } from '../types/store';
+import type { JsonObject, JsonValue } from '@/types/json';
 import TreeTransformer from '@/utils/tree-transformer';
 import TreeFilter from '@/utils/tree-filter';
 import JsonFormatter from '@/utils/transformers/json-formatters';
@@ -17,7 +18,7 @@ export const useAppStore = defineStore('app', () => {
   // State
   const rawInput = ref(localStorage.getItem(STORAGE_KEY_INPUT) || '');
   const format = ref<TDataType>('json');
-  const parsedData = ref<TTreeNode | null>(null);
+  const parsedData = shallowRef<TTreeNode | null>(null);
   const errors = ref<TParseError[]>([]);
   const parseTime = ref(0);
   const isParsing = ref(false);
@@ -39,9 +40,9 @@ export const useAppStore = defineStore('app', () => {
   // Getters
   const isValid = computed(() => errors.value.length === 0);
 
-  const treeSize = computed(() => TreeTransformer.countNodes(parsedData.value));
+  const treeSize = computed<number>(() => TreeTransformer.countNodes(parsedData.value));
 
-  const filteredData = computed(() => {
+  const filteredData = computed<TTreeNode | null>(() => {
     if (!parsedData.value) return null;
     return TreeFilter.filter(parsedData.value, filters.value);
   });
@@ -142,17 +143,17 @@ export const useAppStore = defineStore('app', () => {
     }
 
     const result = SchemaValidator.validate(
-      // Нам нужен чистый объект данных для валидации Zod, а не TTreeNode
-      JSON.parse(JSON.stringify(getRawData(parsedData.value))),
+      // Нам нужен чистый объект данных для валидации Zod, а не TTreeNode.
+      getRawData(parsedData.value),
       validationSchema.value
     );
 
     schemaErrors.value = result.success ? [] : (result.errors || []);
   };
 
-  const getRawData = (node: TTreeNode): any => {
+  const getRawData = (node: TTreeNode): JsonValue => {
     if (node.type === 'object') {
-      const obj: any = {};
+      const obj: JsonObject = {};
       node.children?.forEach(child => {
         obj[child.key] = getRawData(child);
       });

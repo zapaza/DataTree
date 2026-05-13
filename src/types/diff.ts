@@ -1,12 +1,13 @@
 import type { TTreeNodeType } from './store';
+import type { JsonValue } from './json';
 
 export type TDiffChangeType = 'added' | 'removed' | 'modified' | 'unchanged';
 
 export interface TDiffNode {
   type: TDiffChangeType;
   path: string;
-  oldValue?: any;
-  newValue?: any;
+  oldValue?: JsonValue;
+  newValue?: JsonValue;
 }
 
 export interface TDiffTreeNode {
@@ -14,9 +15,9 @@ export interface TDiffTreeNode {
   path: string;
   type: TTreeNodeType;
   diffType: TDiffChangeType;
-  value?: any;
-  oldValue?: any;
-  newValue?: any;
+  value?: JsonValue;
+  oldValue?: JsonValue;
+  newValue?: JsonValue;
   children?: TDiffTreeNode[];
   isExpanded?: boolean;
 }
@@ -33,7 +34,7 @@ export type TJsonPatchOp = 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'tes
 export interface TJsonPatchOperation {
   op: TJsonPatchOp;
   path: string;
-  value?: any;
+  value?: JsonValue;
   from?: string;
 }
 
