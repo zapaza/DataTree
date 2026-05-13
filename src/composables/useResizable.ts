@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onUnmounted } from 'vue';
 
 export default function useResizable(initialWidth: number = 50) {
   const leftWidth = ref(initialWidth);

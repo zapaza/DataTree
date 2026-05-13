@@ -4,16 +4,19 @@
  * @param delay Delay in milliseconds
  * @returns Debounced function
  */
-export default function debounce<T extends (...args: any[]) => any>(fn: T, delay: number): T {
+export default function debounce<TArgs extends unknown[]>(
+  fn: (...args: TArgs) => void | Promise<void>,
+  delay: number
+): (...args: TArgs) => void {
   let timeoutId: ReturnType<typeof setTimeout>;
 
-  return function(this: any, ...args: Parameters<T>) {
+  return (...args: TArgs) => {
     if (timeoutId) {
       clearTimeout(timeoutId);
     }
 
     timeoutId = setTimeout(() => {
-      fn.apply(this, args);
+      void fn(...args);
     }, delay);
-  } as T;
+  };
 }

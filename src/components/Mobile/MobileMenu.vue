@@ -55,7 +55,7 @@
               v-for="item in actionItems"
               :key="item.id"
               class="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-secondary text-base transition-colors"
-              @click="$emit(item.emit as any); $emit('close')"
+              @click="emitAction(item.emit)"
             >
               <div :class="item.icon" class="text-xl text-blue-500" />
               <span class="font-medium">{{ item.label }}</span>
@@ -79,13 +79,36 @@
 </template>
 
 <script setup lang="ts">
-defineEmits(['close', 'toggle-examples', 'toggle-history', 'toggle-settings', 'toggle-theme']);
+type TMenuEmit = 'toggle-examples' | 'toggle-history' | 'toggle-settings';
 
-const actionItems = [
+const emit = defineEmits<{
+  close: [];
+  'toggle-examples': [];
+  'toggle-history': [];
+  'toggle-settings': [];
+  'toggle-theme': [];
+}>();
+
+const actionItems: Array<{ id: string; icon: string; label: string; emit: TMenuEmit }> = [
   { id: 'examples', icon: 'i-carbon-template', label: 'Examples', emit: 'toggle-examples' },
   { id: 'history', icon: 'i-carbon-time', label: 'History', emit: 'toggle-history' },
   { id: 'settings', icon: 'i-carbon-settings', label: 'Settings', emit: 'toggle-settings' },
 ];
+
+const emitAction = (eventName: TMenuEmit) => {
+  switch (eventName) {
+    case 'toggle-examples':
+      emit('toggle-examples');
+      break;
+    case 'toggle-history':
+      emit('toggle-history');
+      break;
+    case 'toggle-settings':
+      emit('toggle-settings');
+      break;
+  }
+  emit('close');
+};
 </script>
 
 <style scoped>

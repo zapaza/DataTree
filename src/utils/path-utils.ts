@@ -1,3 +1,5 @@
+import type { JsonValue } from '@/types/json';
+
 export type TPathFormat = 'js' | 'jsonpath' | 'xpath';
 
 export default class PathUtils {
@@ -58,7 +60,7 @@ export default class PathUtils {
     }).join('/');
   }
 
-  public static formatValue(value: any, type: string): string {
+  public static formatValue(value: JsonValue, type: string): string {
     if (value === null) return 'null';
     if (type === 'string') return String(value);
     if (type === 'object' || type === 'array') {

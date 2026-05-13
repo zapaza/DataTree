@@ -1,4 +1,4 @@
-import { onMounted, onUnmounted, watch } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
 import { useAppStore } from '../stores/appStore';
 import { useOperationsHistoryStore } from '../stores/operationsHistoryStore';
 

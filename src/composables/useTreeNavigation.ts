@@ -2,12 +2,13 @@ import { type Ref, onMounted, onUnmounted } from 'vue';
 import { useAppStore } from '../stores/appStore';
 import { useTreeStore } from '../stores/treeStore';
 import { TreeTraversal } from '../utils/tree-traversal';
+import type { TVirtualNode } from '@/composables/useVirtualTree';
 
 export function useTreeNavigation(
   containerRef: Ref<HTMLElement | null>,
   options: {
     onNavigate?: (path: string) => void;
-    nodes?: Ref<any[]>;
+    nodes?: Ref<TVirtualNode[]>;
   } = {}
 ) {
   const appStore = useAppStore();
