@@ -1,4 +1,5 @@
 import type { TTreeNode, TTreeNodeType } from '@/types/store';
+import type { JsonObject, JsonValue } from '@/types/json';
 
 /**
  * Utility for converting flat object from fast-xml-parser into TTreeNode structure.
@@ -10,7 +11,7 @@ export default class XmlToJsonConverter {
    * @param name - The key name for the node.
    * @returns A TTreeNode object.
    */
-  static convert(data: any, name: string = 'root'): TTreeNode {
+  static convert(data: JsonValue, name: string = 'root'): TTreeNode {
     const type = this.getType(data);
     const node: TTreeNode = {
       type,
@@ -27,10 +28,12 @@ export default class XmlToJsonConverter {
     }
 
     const children: TTreeNode[] = [];
+    const objectData = data as JsonObject;
 
     // Обработка атрибутов и дочерних элементов
-    for (const key in data) {
-      const val = data[key];
+    for (const key in objectData) {
+      const val = objectData[key];
+      if (val === undefined) continue;
 
       if (key.startsWith('@_')) {
         // Это атрибут
@@ -42,7 +45,7 @@ export default class XmlToJsonConverter {
         });
       } else if (key === '#text' || key === '#cdata') {
         // Это текстовое содержимое или CDATA узла
-        if (Object.keys(data).length === 1) {
+        if (Object.keys(objectData).length === 1) {
           // Если это единственный ключ, то это значение самого узла
           node.value = val;
           node.type = this.getType(val);
@@ -78,7 +81,7 @@ export default class XmlToJsonConverter {
     return node;
   }
 
-  private static getType(value: any): TTreeNodeType {
+  private static getType(value: JsonValue): TTreeNodeType {
     if (value === null) return 'null';
     if (Array.isArray(value)) return 'array';
     const type = typeof value;

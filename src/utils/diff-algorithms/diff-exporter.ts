@@ -1,4 +1,5 @@
 import type { TDiffResult } from '@/types/diff';
+import type { JsonValue } from '@/types/json';
 
 /**
  * Utility class for exporting diff results in various formats.
@@ -131,7 +132,7 @@ export default class DiffExporter {
     `;
   }
 
-  private static stringifyValue(value: any): string {
+  private static stringifyValue(value: JsonValue | undefined): string {
     if (value === undefined) return '';
     if (typeof value === 'object' && value !== null) {
       return JSON.stringify(value, null, 2);

@@ -17,26 +17,23 @@ const modelMock = {
   }, null, 2),
   getPositionAt: (offset: number) => {
     // Very simple mock of getPositionAt
-    const text = JSON.stringify({
+    const lines = JSON.stringify({
       a: 1,
       b: {
         c: [1, 2, 3]
       }
-    }, null, 2);
-    const lines = text.substring(0, offset).split('\n');
+    }, null, 2).substring(0, offset).split('\n');
     return {
       lineNumber: lines.length,
       column: lines[lines.length - 1].length + 1
     };
   },
-  getLineCount: () => {
-    return JSON.stringify({
-      a: 1,
-      b: {
-        c: [1, 2, 3]
-      }
-    }, null, 2).split('\n').length;
-  }
+  getLineCount: () => JSON.stringify({
+    a: 1,
+    b: {
+      c: [1, 2, 3]
+    }
+  }, null, 2).split('\n').length
 } as any;
 
 describe('editor-utils', () => {

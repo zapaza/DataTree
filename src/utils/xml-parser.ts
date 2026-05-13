@@ -1,4 +1,11 @@
 import { XMLParser, XMLValidator } from 'fast-xml-parser';
+import type { JsonValue } from '@/types/json';
+
+type TXmlParseResult = {
+  data: JsonValue;
+  error: string | null;
+  position: { line: number; column: number } | null;
+};
 
 export default class XmlParser {
   private static parser = new XMLParser({
@@ -10,7 +17,7 @@ export default class XmlParser {
     trimValues: true,
   });
 
-  static parse(xmlString: string): { data: any; error: string | null; position: { line: number; column: number } | null } {
+  static parse(xmlString: string): TXmlParseResult {
     if (!xmlString.trim()) {
       return { data: null, error: null, position: null };
     }
@@ -29,12 +36,12 @@ export default class XmlParser {
     }
 
     try {
-      const data = this.parser.parse(xmlString);
+      const data = this.parser.parse(xmlString) as JsonValue;
       return { data, error: null, position: null };
-    } catch (e: any) {
+    } catch (e: unknown) {
       return {
         data: null,
-        error: e.message || 'Unknown XML parsing error',
+        error: e instanceof Error ? e.message : 'Unknown XML parsing error',
         position: { line: 1, column: 1 },
       };
     }

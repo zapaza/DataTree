@@ -1,5 +1,6 @@
 import { XMLParser, XMLValidator } from 'fast-xml-parser';
 import type { IParseResult } from '@/types/editor';
+import type { JsonValue } from '@/types/json';
 
 /**
  * Utility class for XML parsing and validation using fast-xml-parser.
@@ -40,16 +41,16 @@ export default class XmlParser {
     }
 
     try {
-      const data = this.parser.parse(xmlString);
+      const data = this.parser.parse(xmlString) as JsonValue;
       return {
         success: true,
         data
       };
-    } catch (e: any) {
+    } catch (e: unknown) {
       return {
         success: false,
         error: {
-          message: e.message || 'Unknown XML parsing error',
+          message: e instanceof Error ? e.message : 'Unknown XML parsing error',
           line: 1,
           column: 1
         }

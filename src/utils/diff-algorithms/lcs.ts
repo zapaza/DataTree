@@ -27,7 +27,7 @@ export default class LCS {
    * но для восстановления пути нам все равно нужна матрица или рекурсия.
    * Здесь мы используем классический подход, но с защитой от пустых данных.
    */
-  private static backtrackLCS<T>(a: T[], b: T[], isEqual: (x: T, y: T) => boolean) {
+  private static backtrackLCS<T>(a: T[], b: T[], isEqual: (x: T, y: T) => boolean): { type: 'added' | 'removed' | 'unchanged', item: T, indexA: number, indexB: number }[] {
     const n = a.length;
     const m = b.length;
 
@@ -77,7 +77,7 @@ export default class LCS {
    * Жадный алгоритм для очень больших массивов (O(N)).
    * Не гарантирует минимальный diff, но работает быстро и не ест память.
    */
-  private static simpleDiff<T>(a: T[], b: T[], isEqual: (x: T, y: T) => boolean) {
+  private static simpleDiff<T>(a: T[], b: T[], isEqual: (x: T, y: T) => boolean): { type: 'added' | 'removed' | 'unchanged', item: T, indexA: number, indexB: number }[] {
     const result: { type: 'added' | 'removed' | 'unchanged', item: T, indexA: number, indexB: number }[] = [];
 
     // Простое сравнение по индексам + обработка разницы в длине
