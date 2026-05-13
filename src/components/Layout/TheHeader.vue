@@ -15,7 +15,7 @@
         <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-500 dark:from-blue-400 dark:to-teal-400">
           DataTree
         </span>
-        <span class="text-xs item font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-500 dark:from-blue-400 dark:to-teal-400">- alfa</span>
+        <span class="text-xs item font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-500 dark:from-blue-400 dark:to-teal-400">{{ appDisplayVersion }}</span>
       </div>
 
       <nav v-if="!isMobile" class="flex items-center gap-1 px-1 py-1 bg-secondary rounded-lg border border-base ml-4">
@@ -39,6 +39,13 @@
     </div>
 
     <div class="flex items-center gap-3">
+      <div
+        class="flex items-center gap-1.5 px-2 py-1 rounded border border-green-200 bg-green-50 dark:bg-green-900/10 dark:border-green-800 text-[10px] font-bold uppercase text-green-700 dark:text-green-300"
+        title="Data is parsed and stored locally in your browser"
+      >
+        <div class="i-carbon-security text-xs" />
+        <span>Local only</span>
+      </div>
       <div
         v-if="!isOnline"
         class="px-2 py-1 rounded border border-amber-200 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-800 text-[10px] font-bold uppercase text-amber-700 dark:text-amber-200"
@@ -72,10 +79,12 @@
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useBreakpoints } from '@/composables/useBreakpoints';
 import useOnlineStatus from '@/composables/useOnlineStatus';
+import { APP_DISPLAY_VERSION } from '@/config/app-meta';
 
 const settingsStore = useSettingsStore();
 const { isMobile } = useBreakpoints();
 const { isOnline } = useOnlineStatus();
+const appDisplayVersion = APP_DISPLAY_VERSION;
 
 defineEmits(['toggle-menu']);
 </script>

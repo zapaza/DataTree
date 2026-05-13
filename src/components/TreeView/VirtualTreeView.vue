@@ -96,7 +96,7 @@ const appStore = useAppStore();
 const treeStore = useTreeStore();
 const { isMobile } = useBreakpoints();
 
-const scroller = ref<any>(null);
+const scroller = ref<{ scrollToItem: (index: number) => void } | null>(null);
 const treeContainer = ref<HTMLElement | null>(null);
 const showMobileFilters = ref(false);
 

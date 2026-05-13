@@ -35,6 +35,35 @@
         </div>
       </section>
 
+      <!-- Privacy -->
+      <section class="space-y-3">
+        <h3 class="text-xs font-bold uppercase text-light tracking-wider flex items-center gap-2">
+          <div class="i-carbon-security" />
+          Privacy
+        </h3>
+        <div class="p-3 rounded-xl border border-light bg-secondary space-y-3">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <span class="text-sm text-base font-medium">Anonymous Analytics</span>
+              <p class="text-[10px] text-light leading-snug mt-1">
+                Off by default. Payload content is never sent.
+              </p>
+            </div>
+            <button
+              class="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              :class="settingsStore.settings.privacy.analyticsEnabled ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'"
+              :aria-label="settingsStore.settings.privacy.analyticsEnabled ? 'Disable anonymous analytics' : 'Enable anonymous analytics'"
+              @click="settingsStore.updatePrivacySettings({ analyticsEnabled: !settingsStore.settings.privacy.analyticsEnabled })"
+            >
+              <span
+                class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                :class="settingsStore.settings.privacy.analyticsEnabled ? 'translate-x-6' : 'translate-x-1'"
+              />
+            </button>
+          </div>
+        </div>
+      </section>
+
       <!-- Editor Settings -->
       <section class="space-y-3">
         <h3 class="text-xs font-bold uppercase text-light tracking-wider flex items-center gap-2">
@@ -161,7 +190,7 @@
 
     <div class="p-4 bg-secondary border-t border-light">
       <p class="text-[10px] text-light text-center uppercase tracking-widest font-bold">
-        Version 1.0.0
+        {{ appDisplayVersion }}
       </p>
     </div>
   </div>
@@ -171,10 +200,12 @@
 import { ref } from 'vue';
 import { useSettingsStore } from '@/stores/settingsStore';
 import useClipboard from '@/composables/useClipboard';
+import { APP_DISPLAY_VERSION } from '@/config/app-meta';
 
-const emit = defineEmits(['close']);
+defineEmits(['close']);
 const settingsStore = useSettingsStore();
 const { showToast } = useClipboard();
+const appDisplayVersion = APP_DISPLAY_VERSION;
 
 const fileInput = ref<HTMLInputElement | null>(null);
 

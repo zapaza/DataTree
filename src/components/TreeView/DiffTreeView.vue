@@ -108,7 +108,7 @@ import { useDiffVirtualTree } from '@/composables/useDiffVirtualTree';
 import DiffTreeNode from './DiffTreeNode.vue';
 
 const diffStore = useDiffStore();
-const scroller = ref<any>(null);
+const scroller = ref<{ scrollToItem: (index: number) => void } | null>(null);
 const treeContainer = ref<HTMLElement | null>(null);
 
 const {
