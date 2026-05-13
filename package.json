@@ -13,11 +13,11 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "test:unit": "vitest",
-    "lint": "eslint vue-project --fix --cache",
+    "lint": "eslint . --cache",
+    "lint:fix": "eslint . --fix --cache",
     "format": "prettier --write --experimental-cli src"
   },
   "dependencies": {
-    "@monaco-editor/loader": "^1.7.0",
     "fast-xml-parser": "^5.3.3",
     "jsonc-parser": "^3.3.1",
     "monaco-editor": "^0.55.1",

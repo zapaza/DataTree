@@ -1,5 +1,6 @@
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
 import SafeJsonParser from '@/utils/parsers/json-parser';
+import type { JsonObject, JsonValue } from '@/types/json';
 
 export default class JsonXmlConverter {
   private static xmlParser = new XMLParser({
@@ -26,10 +27,11 @@ export default class JsonXmlConverter {
 
     try {
       // Если данных несколько на верхнем уровне, оборачиваем в <root>
-      let dataToBuild = result.data;
-      const keys = Object.keys(dataToBuild);
+      let dataToBuild: JsonValue = result.data;
 
-      if (keys.length !== 1 || typeof dataToBuild !== 'object' || Array.isArray(dataToBuild)) {
+      if (typeof dataToBuild !== 'object' || dataToBuild === null || Array.isArray(dataToBuild)) {
+        dataToBuild = { root: dataToBuild };
+      } else if (Object.keys(dataToBuild).length !== 1) {
         dataToBuild = { root: dataToBuild };
       }
 
@@ -42,7 +44,7 @@ export default class JsonXmlConverter {
 
   public static xmlToJson(xmlString: string): string | null {
     try {
-      const jsonObj = this.xmlParser.parse(xmlString);
+      const jsonObj = this.xmlParser.parse(xmlString) as JsonObject;
       return JSON.stringify(jsonObj, null, 2);
     } catch (e) {
       console.error('XML to JSON conversion error:', e);

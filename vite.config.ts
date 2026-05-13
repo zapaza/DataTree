@@ -6,10 +6,15 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import UnoCSS from 'unocss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import packageJson from './package.json'
 
 // Some dependencies (notably @vitejs/plugin-vue in newer versions) rely on
 // `globalThis.crypto.hash(...)`. Ensure it's available in Node environments.
-const g = globalThis as any
+type THashableCrypto = {
+  hash?: (algorithm: string, data: Uint8Array) => Buffer
+}
+
+const g = globalThis as unknown as { crypto?: THashableCrypto }
 if (!g.crypto) g.crypto = {}
 if (typeof g.crypto.hash !== 'function') {
   g.crypto.hash = (algorithm: string, data: Uint8Array) => createHash(algorithm).update(data).digest()
@@ -17,6 +22,10 @@ if (typeof g.crypto.hash !== 'function') {
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(packageJson.version),
+    __APP_STAGE__: JSON.stringify('alpha'),
+  },
   plugins: [
     vue(),
     vueDevTools(),
@@ -51,23 +60,8 @@ export default defineConfig({
         ]
       },
       workbox: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-cache',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // <== 365 days
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          }
-        ]
       }
     })
   ],
@@ -81,7 +75,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           'vendor': ['vue', 'pinia'],
-          'editor': ['jsonc-parser', 'fast-xml-parser', 'zod', '@monaco-editor/loader'],
+          'editor': ['jsonc-parser', 'fast-xml-parser', 'zod'],
           'tree': [],
         },
       },
