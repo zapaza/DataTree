@@ -37,7 +37,7 @@ import useDiffEditor from '@/composables/useDiffEditor';
 import useResizable from '@/composables/useResizable';
 import { calculateRange } from '@/utils/diff-algorithms/editor-utils';
 import { useDiffStore } from '@/stores/diffStore';
-import { useSettingsStore } from '@/stores/settingsStore';
+import type { IParseResult } from '@/types/editor';
 
 const props = defineProps<{
   leftValue: string;
@@ -51,7 +51,6 @@ const emit = defineEmits<{
 }>();
 
 const diffStore = useDiffStore();
-const settingsStore = useSettingsStore();
 const { editorOptions } = useMonacoSettings();
 const { leftWidth, startResizing } = useResizable(50);
 
@@ -66,6 +65,12 @@ let leftEditor: monaco.editor.IStandaloneCodeEditor | null = null;
 let rightEditor: monaco.editor.IStandaloneCodeEditor | null = null;
 let scrollDispose: (() => void) | null = null;
 let monacoInstance: typeof monaco | null = null;
+
+type THiddenAreasEditor = monaco.editor.IStandaloneCodeEditor & {
+  setHiddenAreas: (ranges: monaco.IRange[]) => void;
+};
+
+type TMarkerError = NonNullable<IParseResult['error']>;
 
 const createEditorOptions = (value: string, format: string): monaco.editor.IStandaloneEditorConstructionOptions => ({
   ...editorOptions.value,
@@ -119,7 +124,7 @@ onMounted(async () => {
 /**
  * Updates Monaco markers for parsing errors.
  */
-const updateMarkers = (editor: monaco.editor.IStandaloneCodeEditor | null, error: any, format: string) => {
+const updateMarkers = (editor: monaco.editor.IStandaloneCodeEditor | null, error: TMarkerError | null, format: string) => {
   if (!editor || !monacoInstance) return;
   const model = editor.getModel();
   if (!model) return;
@@ -183,8 +188,8 @@ const updateHiddenAreas = () => {
   if (!leftEditor || !rightEditor || !monacoInstance) return;
 
   if (!props.showOnlyChanges) {
-    (leftEditor as any).setHiddenAreas([]);
-    (rightEditor as any).setHiddenAreas([]);
+    (leftEditor as unknown as THiddenAreasEditor).setHiddenAreas([]);
+    (rightEditor as unknown as THiddenAreasEditor).setHiddenAreas([]);
     return;
   }
 
@@ -245,8 +250,8 @@ const updateHiddenAreas = () => {
     return hiddenRanges;
   };
 
-  (leftEditor as any).setHiddenAreas(getHiddenRanges(leftEditor, changedLinesLeft));
-  (rightEditor as any).setHiddenAreas(getHiddenRanges(rightEditor, changedLinesRight));
+  (leftEditor as unknown as THiddenAreasEditor).setHiddenAreas(getHiddenRanges(leftEditor, changedLinesLeft));
+  (rightEditor as unknown as THiddenAreasEditor).setHiddenAreas(getHiddenRanges(rightEditor, changedLinesRight));
 };
 
 const throttledUpdateDecorations = debounce(() => {

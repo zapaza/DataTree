@@ -271,7 +271,7 @@ const onLeftFileChange = async (e: Event) => {
       if (format) diffStore.setLeftFormat(format);
       diffStore.setLeftRaw(content);
       showToast(`File "${file.name}" imported to Source A`, 'success');
-    } catch (error) {
+    } catch {
       showToast('Failed to read file', 'error');
     } finally {
       target.value = '';
@@ -289,7 +289,7 @@ const onRightFileChange = async (e: Event) => {
       if (format) diffStore.setRightFormat(format);
       diffStore.setRightRaw(content);
       showToast(`File "${file.name}" imported to Source B`, 'success');
-    } catch (error) {
+    } catch {
       showToast('Failed to read file', 'error');
     } finally {
       target.value = '';

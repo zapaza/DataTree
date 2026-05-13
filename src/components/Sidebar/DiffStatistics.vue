@@ -62,7 +62,7 @@
     </div>
 
     <div v-else class="flex flex-col items-center justify-center p-8 text-center bg-secondary rounded-xl border border-dashed border-base">
-      <div class="i-ph-chart-line-duotone text-3xl text-light mb-2 opacity-50" />
+      <div class="i-carbon-chart-line text-3xl text-light mb-2 opacity-50" />
       <p class="text-[10px] text-muted italic">No comparison data available yet.</p>
     </div>
   </div>

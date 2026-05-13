@@ -57,6 +57,7 @@ import { useAppStore } from '@/stores/appStore'
 import { useTreeStore } from '@/stores/treeStore'
 import { useDiffStore } from '@/stores/diffStore'
 import { onMounted } from 'vue'
+import type { TTreeNode } from '@/types/store'
 
 const appStore = useAppStore()
 const treeStore = useTreeStore()
@@ -68,10 +69,10 @@ onMounted(() => {
 
 const expandAll = () => {
   if (appStore.parsedData) {
-    const getAllPaths = (node: any, currentPath: string = 'root', paths: string[] = []): string[] => {
+    const getAllPaths = (node: TTreeNode, currentPath: string = 'root', paths: string[] = []): string[] => {
       paths.push(currentPath)
       if (node.children) {
-        node.children.forEach((child: any) => {
+        node.children.forEach((child) => {
           getAllPaths(child, `${currentPath}.${child.key}`, paths)
         })
       }

@@ -59,6 +59,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { TDiffTreeNode } from '@/types/diff';
+import type { JsonValue } from '@/types/json';
 
 const props = defineProps<{
   node: TDiffTreeNode;
@@ -73,7 +74,8 @@ const hasChildren = computed(() => props.node.children && props.node.children.le
 /**
  * Formats value for display in the tree.
  */
-const formatValue = (val: any): string => {
+const formatValue = (val: JsonValue | undefined): string => {
+  if (val === undefined) return '';
   if (val === null) return 'null';
   if (typeof val === 'string') return `"${val}"`;
   if (typeof val === 'object') return Array.isArray(val) ? '[...]' : '{...}';

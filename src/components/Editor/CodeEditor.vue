@@ -134,7 +134,6 @@ import { ref, onMounted, watch, computed } from 'vue';
 import type * as monaco from 'monaco-editor';
 import { useAppStore } from '@/stores/appStore';
 import { useHistoryStore } from '@/stores/historyStore';
-import { useSettingsStore } from '@/stores/settingsStore';
 import useFormatDetector from '@/composables/useFormatDetector';
 import useMonaco from '@/composables/useMonaco';
 import useMonacoSettings from '@/composables/useMonacoSettings';
@@ -146,7 +145,6 @@ import ErrorPanel from './ErrorPanel.vue';
 
 const appStore = useAppStore();
 const historyStore = useHistoryStore();
-const settingsStore = useSettingsStore();
 const { editorOptions } = useMonacoSettings();
 const { detectFormat } = useFormatDetector();
 const { initMonaco, monacoInstance } = useMonaco();
