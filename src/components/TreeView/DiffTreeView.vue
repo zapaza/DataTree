@@ -3,20 +3,20 @@
     <!-- Toolbar -->
     <div class="px-3 h-10 border-b border-base flex items-center bg-secondary justify-between shrink-0">
       <div class="flex items-center gap-2">
-        <span class="text-[10px] font-bold uppercase tracking-wider text-muted">Diff Tree</span>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-muted">{{ t('compare.compareTree') }}</span>
         <div class="flex items-center gap-1 ml-2 pl-2 border-l border-base">
           <button
-            v-tooltip="'Expand all changes'"
+            v-tooltip="t('common.expandAll')"
             class="p-1 hover:bg-gray-200 dark:hover:bg-[#2d2d2d] rounded transition-colors text-muted"
-            title="Expand All"
+            :title="t('common.expandAll')"
             @click="expandAll"
           >
             <div class="i-material-symbols-expand-all text-sm" />
           </button>
           <button
-            v-tooltip="'Collapse all changes'"
+            v-tooltip="t('common.collapseAll')"
             class="p-1 hover:bg-gray-200 dark:hover:bg-[#2d2d2d] rounded transition-colors text-muted"
-            title="Collapse All"
+            :title="t('common.collapseAll')"
             @click="collapseAll"
           >
             <div class="i-material-symbols-collapse-all text-sm" />
@@ -29,8 +29,8 @@
         <div class="flex items-center gap-1 mr-2 pr-2 border-r border-base">
           <button
             class="p-1 hover:bg-gray-200 dark:hover:bg-[#2d2d2d] rounded transition-colors text-muted disabled:opacity-30"
-            title="Previous Change"
-            v-tooltip="'Previous Change'"
+            :title="t('compare.previousChange')"
+            v-tooltip="t('compare.previousChange')"
             :disabled="!hasChanges"
             @click="handlePrev"
           >
@@ -40,9 +40,9 @@
             {{ diffStore.currentChangeIndex + 1 }} / {{ totalChanges }}
           </span>
           <button
-            v-tooltip="'Next Change'"
+            v-tooltip="t('compare.nextChange')"
             class="p-1 hover:bg-gray-200 dark:hover:bg-[#2d2d2d] rounded transition-colors text-muted disabled:opacity-30"
-            title="Next Change"
+            :title="t('compare.nextChange')"
             :disabled="!hasChanges"
             @click="handleNext"
           >
@@ -56,7 +56,7 @@
             v-model="diffStore.showOnlyChanges"
             class="w-3.5 h-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <span class="text-[10px] font-medium text-muted group-hover:text-base transition-colors">Only Changes</span>
+          <span class="text-[10px] font-medium text-muted group-hover:text-base transition-colors">{{ t('compare.onlyChanges') }}</span>
         </label>
       </div>
     </div>
@@ -89,12 +89,19 @@
     <div v-else class="flex-1 flex flex-col items-center justify-center text-light p-8 text-center bg-secondary">
       <div v-if="diffStore.isComputingDiff" class="flex flex-col items-center">
         <div class="i-carbon-circle-dash animate-spin text-5xl mb-4 opacity-40" />
-        <p class="text-sm italic">Computing diff…</p>
+        <p class="text-sm italic">{{ t('compare.computing') }}</p>
+      </div>
+      <div v-else-if="diffStore.diffResult" class="flex flex-col items-center max-w-sm">
+        <div class="i-carbon-data-vis-4 text-5xl mb-4 opacity-20" />
+        <p class="text-sm italic">{{ t('compare.skippedTree') }}</p>
+        <p class="text-xs text-muted mt-2">
+          {{ t('compare.skippedTreeHint') }}
+        </p>
       </div>
       <template v-else>
         <div class="i-carbon-ibm-cloud-direct-link-2-dedicated text-5xl mb-4 opacity-20" />
         <p class="text-sm italic">
-          Load two files to compare and see the diff tree.
+          {{ t('compare.loadTwoFiles') }}
         </p>
       </template>
     </div>
@@ -105,9 +112,11 @@
 import { ref, computed, toRef } from 'vue';
 import { useDiffStore } from '@/stores/diffStore';
 import { useDiffVirtualTree } from '@/composables/useDiffVirtualTree';
+import { useI18n } from '@/composables/useI18n';
 import DiffTreeNode from './DiffTreeNode.vue';
 
 const diffStore = useDiffStore();
+const { t } = useI18n();
 const scroller = ref<{ scrollToItem: (index: number) => void } | null>(null);
 const treeContainer = ref<HTMLElement | null>(null);
 

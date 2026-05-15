@@ -55,4 +55,19 @@ describe('StatisticsCalculator', () => {
     expect(stats.typeDistribution.boolean).toBe(1);
     expect(stats.typeDistribution.null).toBe(1);
   });
+
+  it('should calculate deeply nested stats without recursive stack overflow', () => {
+    const root: TTreeNode = { type: 'object', key: 'root', value: null, children: [] };
+    let cursor = root;
+    for (let index = 0; index < 1500; index++) {
+      const next: TTreeNode = { type: 'object', key: 'next', value: null, children: [] };
+      cursor.children = [next];
+      cursor = next;
+    }
+
+    const stats = StatisticsCalculator.calculate(root, 1, 'json', true, 1);
+
+    expect(stats.nodes).toBe(1501);
+    expect(stats.depth).toBe(1501);
+  });
 });

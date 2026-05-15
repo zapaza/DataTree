@@ -5,6 +5,7 @@ export interface ITraversalNode {
   node: TTreeNode;
   depth: number;
   parentPath: string | null;
+  pathSegments: string[];
 }
 
 export class TreeTraversal {
@@ -15,24 +16,33 @@ export class TreeTraversal {
     if (!root) return [];
 
     const visibleNodes: ITraversalNode[] = [];
+    const stack: ITraversalNode[] = [
+      { node: root, path: 'root', depth: 0, parentPath: null, pathSegments: [] }
+    ];
 
-    const traverse = (
-      node: TTreeNode,
-      path: string,
-      depth: number,
-      parentPath: string | null
-    ) => {
-      visibleNodes.push({ path, node, depth, parentPath });
+    while (stack.length > 0) {
+      const current = stack.pop();
+      if (!current) break;
 
-      // Если узел развернут и у него есть дети, идем глубже
-      if (expandedNodes.has(path) && node.children && node.children.length > 0) {
-        node.children.forEach((child) => {
-          traverse(child, `${path}.${child.key}`, depth + 1, path);
+      visibleNodes.push(current);
+
+      if (!expandedNodes.has(current.path) || !current.node.children?.length) {
+        continue;
+      }
+
+      for (let i = current.node.children.length - 1; i >= 0; i--) {
+        const child = current.node.children[i];
+        if (!child) continue;
+
+        stack.push({
+          node: child,
+          path: `${current.path}.${child.key}`,
+          depth: current.depth + 1,
+          parentPath: current.path,
+          pathSegments: [...current.pathSegments, child.key]
         });
       }
-    };
-
-    traverse(root, 'root', 0, null);
+    }
 
     return visibleNodes;
   }

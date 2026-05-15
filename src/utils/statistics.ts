@@ -33,19 +33,25 @@ export default class StatisticsCalculator {
     let nodesCount = 0;
     let maxDepth = 0;
     let maxWidth = 0;
+    const stack: Array<{ node: TTreeNode; depth: number }> = [{ node, depth: 1 }];
 
-    const traverse = (currentNode: TTreeNode, depth: number) => {
+    while (stack.length > 0) {
+      const current = stack.pop();
+      if (!current) continue;
+
+      const { node: currentNode, depth } = current;
       nodesCount++;
       distribution[currentNode.type]++;
       maxDepth = Math.max(maxDepth, depth);
 
       if (currentNode.children && currentNode.children.length > 0) {
         maxWidth = Math.max(maxWidth, currentNode.children.length);
-        currentNode.children.forEach(child => traverse(child, depth + 1));
+        for (let index = currentNode.children.length - 1; index >= 0; index--) {
+          const child = currentNode.children[index];
+          if (child) stack.push({ node: child, depth: depth + 1 });
+        }
       }
-    };
-
-    traverse(node, 1);
+    }
 
     return {
       size: rawInputLength,
@@ -59,3 +65,13 @@ export default class StatisticsCalculator {
     };
   }
 }
+
+export const createDocumentStatistics = (
+  node: TTreeNode | null,
+  rawInputLength: number,
+  format: string,
+  isValid: boolean,
+  parseTime: number
+): TDocumentStatistics => {
+  return StatisticsCalculator.calculate(node, rawInputLength, format, isValid, parseTime);
+};

@@ -1,4 +1,6 @@
 import { ref } from 'vue';
+import { translate } from '@/i18n';
+import { useSettingsStore } from '@/stores/settingsStore';
 
 interface TToast {
   show: boolean;
@@ -15,14 +17,17 @@ const toast = ref<TToast>({
 let toastTimeout: number | null = null;
 
 export default function useClipboard() {
-  const copy = async (text: string, successMessage: string = 'Copied to clipboard!') => {
+  const settingsStore = useSettingsStore();
+  const t = (key: string) => translate(settingsStore.settings.locale, key);
+
+  const copy = async (text: string, successMessage?: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      showToast(successMessage, 'success');
+      showToast(successMessage ?? t('toast.copied'), 'success');
       return true;
     } catch (err) {
       console.error('Failed to copy: ', err);
-      showToast('Failed to copy to clipboard', 'error');
+      showToast(t('toast.copyFailed'), 'error');
       return false;
     }
   };

@@ -18,7 +18,7 @@
 
         <div class="p-4 border-b border-light flex items-center justify-between bg-secondary shrink-0">
           <h3 class="font-bold text-base flex items-center gap-2">
-            <slot name="title">Settings & Filters</slot>
+            <slot name="title">{{ t('common.sidePanels') }}</slot>
           </h3>
           <button
             class="p-2 hover:bg-gray-200 dark:hover:bg-[#2d2d2d] rounded-full transition-colors"
@@ -37,11 +37,15 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from '@/composables/useI18n';
+
 defineProps<{
   show: boolean;
 }>();
 
 defineEmits(['close']);
+
+const { t } = useI18n();
 </script>
 
 <style scoped>

@@ -2,7 +2,7 @@
   <div class="p-4 space-y-4">
     <h3 class="text-xs font-bold uppercase text-light tracking-wider flex items-center gap-2">
       <div class="i-carbon-document-import" />
-      Data Import
+      {{ t('file.import') }}
     </h3>
 
     <div class="grid grid-cols-1 gap-2">
@@ -20,8 +20,8 @@
       >
         <div class="i-carbon-upload text-2xl text-blue-500 group-hover:scale-110 transition-transform" />
         <div class="flex flex-col items-start">
-          <span class="text-xs font-bold text-base">Import File</span>
-          <span class="text-[10px] text-light">JSON or XML</span>
+          <span class="text-xs font-bold text-base">{{ t('file.import') }}</span>
+          <span class="text-[10px] text-light">{{ t('file.importHint') }}</span>
         </div>
       </button>
 
@@ -31,8 +31,8 @@
       >
         <div class="i-carbon-download text-2xl text-teal-500 group-hover:scale-110 transition-transform" />
         <div class="flex flex-col items-start">
-          <span class="text-xs font-bold text-base">Export File</span>
-          <span class="text-[10px] text-light">Save to disk</span>
+          <span class="text-xs font-bold text-base">{{ t('file.export') }}</span>
+          <span class="text-[10px] text-light">{{ t('file.exportHint') }}</span>
         </div>
       </button>
     </div>
@@ -42,8 +42,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import useFileHandler from '@/composables/useFileHandler';
+import useI18n from '@/composables/useI18n';
 
 const { handleImport, handleExport } = useFileHandler();
+const { t } = useI18n();
 const fileInput = ref<HTMLInputElement | null>(null);
 
 const triggerFileInput = () => {

@@ -5,15 +5,15 @@
       <input
         v-model="searchQuery"
         type="text"
-        placeholder="Search keys or values..."
+        :placeholder="t('tree.searchPlaceholder')"
         class="w-full pl-9 pr-8 py-1.5 text-xs bg-base border border-base rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 transition-all text-base"
-        aria-label="Search tree nodes"
+        :aria-label="t('tree.searchLabel')"
         @keydown="handleKeyDown"
       />
       <button
         v-if="searchQuery"
         class="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded text-light hover:text-muted transition-colors"
-        aria-label="Clear search"
+        :aria-label="t('tree.clearSearch')"
         @click="clearSearch"
       >
         <div class="i-carbon-close text-[12px]" />
@@ -28,8 +28,8 @@
         <button
           class="p-1 hover:bg-gray-50 dark:hover:bg-[#2d2d2d] text-muted disabled:opacity-30 disabled:hover:bg-transparent transition-colors border-r border-base"
           :disabled="resultsCount === 0"
-          title="Previous match (Shift+Enter)"
-          aria-label="Previous match"
+          :title="t('tree.previousMatchTitle')"
+          :aria-label="t('tree.previousMatch')"
           @click="prev"
         >
           <div class="i-carbon-chevron-up text-sm" />
@@ -37,8 +37,8 @@
         <button
           class="p-1 hover:bg-gray-50 dark:hover:bg-[#2d2d2d] text-muted disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
           :disabled="resultsCount === 0"
-          title="Next match (Enter)"
-          aria-label="Next match"
+          :title="t('tree.nextMatchTitle')"
+          :aria-label="t('tree.nextMatch')"
           @click="next"
         >
           <div class="i-carbon-chevron-down text-sm" />
@@ -51,9 +51,11 @@
 <script setup lang="ts">
 import { useTreeSearch } from '@/composables/useTreeSearch';
 import { useTreeStore } from '@/stores/treeStore';
+import useI18n from '@/composables/useI18n';
 
 const { searchQuery, next, prev, resultsCount } = useTreeSearch();
 const treeStore = useTreeStore();
+const { t } = useI18n();
 
 const handleKeyDown = (e: KeyboardEvent) => {
   if (e.key === 'Enter') {

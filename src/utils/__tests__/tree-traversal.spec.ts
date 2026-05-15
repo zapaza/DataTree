@@ -42,6 +42,7 @@ describe('TreeTraversal', () => {
 
     expect(visible).toHaveLength(3); // root, name, address
     expect(visible.map(v => v.path)).toEqual(['root', 'root.name', 'root.address']);
+    expect(visible.map(v => v.pathSegments)).toEqual([[], ['name'], ['address']]);
   });
 
   it('should return nested children when parent is expanded', () => {
@@ -50,6 +51,7 @@ describe('TreeTraversal', () => {
 
     expect(visible).toHaveLength(4); // root, name, address, address.city
     expect(visible.map(v => v.path)).toEqual(['root', 'root.name', 'root.address', 'root.address.city']);
+    expect(visible[3]?.pathSegments).toEqual(['address', 'city']);
   });
 
   it('should handle null root', () => {

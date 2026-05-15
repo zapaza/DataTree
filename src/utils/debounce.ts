@@ -1,12 +1,12 @@
 /**
  * Simple debounce function to delay execution.
  * @param fn The function to debounce
- * @param delay Delay in milliseconds
+ * @param delay Delay in milliseconds or a function that returns it.
  * @returns Debounced function
  */
 export default function debounce<TArgs extends unknown[]>(
   fn: (...args: TArgs) => void | Promise<void>,
-  delay: number
+  delay: number | ((...args: TArgs) => number)
 ): (...args: TArgs) => void {
   let timeoutId: ReturnType<typeof setTimeout>;
 
@@ -15,8 +15,9 @@ export default function debounce<TArgs extends unknown[]>(
       clearTimeout(timeoutId);
     }
 
+    const waitMs = typeof delay === 'function' ? delay(...args) : delay;
     timeoutId = setTimeout(() => {
       void fn(...args);
-    }, delay);
+    }, waitMs);
   };
 }

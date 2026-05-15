@@ -29,6 +29,19 @@ describe('LCS', () => {
     expect(result.filter(r => r.type === 'unchanged').length).toBe(size - 1);
   });
 
+  it('should use bounded Myers when the LCS matrix would be too large but edit distance is small', () => {
+    const size = 1001;
+    const a = Array.from({ length: size }, (_, i) => i);
+    const b = Array.from({ length: size }, (_, i) => i - 1);
+
+    const result = LCS.diff(a, b, isEqual);
+
+    expect(result.length).toBeGreaterThan(size);
+    expect(result.filter(r => r.type === 'unchanged')).toHaveLength(size - 1);
+    expect(result.filter(r => r.type === 'added')).toHaveLength(1);
+    expect(result.filter(r => r.type === 'removed')).toHaveLength(1);
+  });
+
   it('should handle completely different arrays', () => {
     const a = [1, 2];
     const b = [3, 4];

@@ -5,15 +5,15 @@
         <div class="flex gap-1 mr-2">
           <button
             class="px-3 py-1 md:px-2 md:py-0.5 text-sm md:text-xs rounded transition-colors"
-            :class="appStore.format === 'json' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold' : 'text-muted hover:bg-gray-200 dark:hover:bg-[#2d2d2d]'"
-            @click="appStore.setFormat('json')"
+            :class="documentStore.format === 'json' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold' : 'text-muted hover:bg-gray-200 dark:hover:bg-[#2d2d2d]'"
+            @click="documentStore.setFormat('json')"
           >
             JSON
           </button>
           <button
             class="px-3 py-1 md:px-2 md:py-0.5 text-sm md:text-xs rounded transition-colors"
-            :class="appStore.format === 'xml' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold' : 'text-muted hover:bg-gray-200 dark:hover:bg-[#2d2d2d]'"
-            @click="appStore.setFormat('xml')"
+            :class="documentStore.format === 'xml' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold' : 'text-muted hover:bg-gray-200 dark:hover:bg-[#2d2d2d]'"
+            @click="documentStore.setFormat('xml')"
           >
             XML
           </button>
@@ -23,8 +23,8 @@
           <button
             class="p-2 md:p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-muted"
             :disabled="!historyStore.canUndo"
-            title="Undo (Ctrl+Z)"
-            v-tooltip="'Undo (Ctrl+Z)'"
+            :title="t('editor.undo')"
+            v-tooltip="t('editor.undo')"
             @click="handleUndo"
           >
             <div class="i-carbon-undo text-base md:text-sm" />
@@ -32,8 +32,8 @@
           <button
             class="p-2 md:p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-muted"
             :disabled="!historyStore.canRedo"
-            title="Redo (Ctrl+Shift+Z)"
-            v-tooltip="'Redo (Ctrl+Shift+Z)'"
+            :title="t('editor.redo')"
+            v-tooltip="t('editor.redo')"
             @click="handleRedo"
           >
             <div class="i-carbon-redo text-base md:text-sm" />
@@ -41,48 +41,48 @@
         </div>
 
         <button
-          v-if="hasError && appStore.format === 'json'"
+          v-if="hasError && documentStore.format === 'json'"
           class="flex items-center gap-1 px-3 py-1 md:px-2 md:py-0.5 text-sm md:text-xs bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/40 rounded transition-colors border border-amber-200 dark:border-amber-800"
-          title="Try to auto-fix JSON errors"
-          v-tooltip="'Try to auto-fix JSON errors'"
+          :title="t('editor.autoFixTitle')"
+          v-tooltip="t('editor.autoFixTitle')"
           @click="applyFix"
         >
           <div class="i-carbon-magic-wand text-xs md:text-[10px]" />
-          <span>Auto-fix</span>
+          <span>{{ t('editor.autoFix') }}</span>
         </button>
 
-        <div v-if="appStore.isValid" class="flex gap-1 ml-2 border-l border-base pl-2">
+        <div v-if="documentStore.isValid" class="flex gap-1 ml-2 border-l border-base pl-2">
           <button
-            v-if="appStore.format === 'json'"
+            v-if="documentStore.format === 'json'"
             class="p-2 md:p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] text-muted transition-colors"
-            title="Format JSON"
-            v-tooltip="'Format JSON'"
+            :title="t('editor.formatJson')"
+            v-tooltip="t('editor.formatJson')"
             @click="handleFormat"
           >
             <div class="i-carbon-center-to-fit text-base md:text-sm" />
           </button>
           <button
-            v-if="appStore.format === 'json'"
+            v-if="documentStore.format === 'json'"
             class="p-2 md:p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] text-muted transition-colors"
-            title="Minify JSON"
-            v-tooltip="'Minify JSON'"
+            :title="t('editor.minifyJson')"
+            v-tooltip="t('editor.minifyJson')"
             @click="handleMinify"
           >
             <div class="i-carbon-bring-to-front text-base md:text-sm" />
           </button>
           <button
-            v-if="appStore.format === 'json'"
+            v-if="documentStore.format === 'json'"
             class="p-2 md:p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] text-muted transition-colors"
-            title="Sort Keys Alphabetically"
-            v-tooltip="'Sort Keys Alphabetically'"
+            :title="t('editor.sortKeys')"
+            v-tooltip="t('editor.sortKeys')"
             @click="handleSort"
           >
             <div class="i-carbon-sort-ascending text-base md:text-sm" />
           </button>
           <button
             class="p-2 md:p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] text-muted transition-colors"
-            :title="appStore.format === 'json' ? 'Convert to XML' : 'Convert to JSON'"
-            v-tooltip="appStore.format === 'json' ? 'Convert to XML' : 'Convert to JSON'"
+            :title="documentStore.format === 'json' ? t('editor.convertToXml') : t('editor.convertToJson')"
+            v-tooltip="documentStore.format === 'json' ? t('editor.convertToXml') : t('editor.convertToJson')"
             @click="handleConvert"
           >
             <div class="i-carbon-arrows-horizontal text-base md:text-sm" />
@@ -98,11 +98,11 @@
           class="flex items-center gap-1 text-[10px] text-red-500 dark:text-red-400 font-medium animate-pulse"
         >
           <div class="i-carbon-error text-[12px]" />
-          <span>Invalid {{ appStore.format.toUpperCase() }}</span>
+          <span>{{ t('common.invalid') }} {{ documentStore.format.toUpperCase() }}</span>
         </div>
 
         <div class="text-[10px] text-light font-mono">
-          {{ appStore.rawInput.length }} chars
+          {{ documentStore.rawInput.length }} chars
         </div>
       </div>
     </div>
@@ -120,7 +120,7 @@
       >
         <div class="i-carbon-document-import text-5xl text-blue-600 mb-2 animate-bounce" />
         <span class="text-blue-700 font-bold bg-white/80 px-4 py-2 rounded-full shadow-lg border border-blue-200">
-          Drop file here to import
+          {{ t('file.import') }}
         </span>
       </div>
 
@@ -132,7 +132,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue';
 import type * as monaco from 'monaco-editor';
-import { useAppStore } from '@/stores/appStore';
+import { useDocumentStore } from '@/stores/documentStore';
 import { useHistoryStore } from '@/stores/historyStore';
 import useFormatDetector from '@/composables/useFormatDetector';
 import useMonaco from '@/composables/useMonaco';
@@ -142,72 +142,80 @@ import useAnalytics from '@/composables/useAnalytics';
 import SafeJsonParser from '@/utils/parsers/json-parser';
 import FileHandler from './FileHandler.vue';
 import ErrorPanel from './ErrorPanel.vue';
+import type { TContractIssue } from '@/types/contracts';
+import useI18n from '@/composables/useI18n';
 
-const appStore = useAppStore();
+const documentStore = useDocumentStore();
 const historyStore = useHistoryStore();
 const { editorOptions } = useMonacoSettings();
 const { detectFormat } = useFormatDetector();
 const { initMonaco, monacoInstance } = useMonaco();
 const { handleImport } = useFileHandler();
 const { trackEvent } = useAnalytics();
+const { t } = useI18n();
 
 const editorContainer = ref<HTMLElement | null>(null);
 const isDragging = ref(false);
 let editor: monaco.editor.IStandaloneCodeEditor | null = null;
 
-const hasError = computed(() => !appStore.isValid);
+const hasError = computed(() => !documentStore.isValid);
 
 const handleFormat = () => {
-  appStore.formatJson();
+  documentStore.formatJson();
   if (editor) {
-    editor.setValue(appStore.rawInput);
+    editor.setValue(documentStore.rawInput);
   }
 };
 
 const handleMinify = () => {
-  appStore.minifyJson();
+  documentStore.minifyJson();
   if (editor) {
-    editor.setValue(appStore.rawInput);
+    editor.setValue(documentStore.rawInput);
   }
 };
 
 const handleSort = () => {
-  appStore.sortKeys();
+  documentStore.sortKeys();
   if (editor) {
-    editor.setValue(appStore.rawInput);
+    editor.setValue(documentStore.rawInput);
   }
 };
 
 const handleConvert = () => {
-  const oldFormat = appStore.format;
-  appStore.convertFormat();
+  const oldFormat = documentStore.format;
+  documentStore.convertFormat();
   if (editor) {
-    editor.setValue(appStore.rawInput);
-    // Обновляем маркеры так как формат мог измениться
-    validateContent();
-    trackEvent('format_convert', { from: oldFormat, to: appStore.format });
+    editor.setValue(documentStore.rawInput);
+    trackEvent('format_convert', { from: oldFormat, to: documentStore.format });
   }
 };
 
-const validateContent = () => {
-  appStore.parseInput();
-};
-
-watch(() => appStore.errors, (newErrors) => {
+watch(() => documentStore.errors, (newErrors) => {
   if (newErrors.length > 0 && newErrors[0]) {
     const err = newErrors[0];
-    updateMarkers(err.message, { line: err.line, column: err.column });
+    updateParseMarkers(err.message, { line: err.line, column: err.column });
   } else {
-    updateMarkers(null, null);
+    updateParseMarkers(null, null);
   }
 }, { deep: true });
 
-const updateMarkers = (message: string | null, position: { line: number, column: number } | null) => {
+watch(() => documentStore.contractIssues, (issues) => {
+  updateContractMarkers(issues);
+}, { deep: true });
+
+watch(() => documentStore.activeContractIssue, (issue) => {
+  if (!editor || !issue?.line) return;
+  editor.revealLineInCenter(issue.line);
+  editor.setPosition({ lineNumber: issue.line, column: issue.column || 1 });
+  editor.focus();
+});
+
+const updateParseMarkers = (message: string | null, position: { line: number, column: number } | null) => {
   if (!editor || !monacoInstance.value) return;
   const model = editor.getModel();
   if (!model) return;
 
-  const owner = appStore.format === 'json' ? 'json-parser' : 'xml-parser';
+  const owner = documentStore.format === 'json' ? 'json-parser' : 'xml-parser';
 
   if (message && position) {
     monacoInstance.value.editor.setModelMarkers(model, owner, [{
@@ -224,10 +232,34 @@ const updateMarkers = (message: string | null, position: { line: number, column:
   }
 };
 
+const markerSeverity = (severity: TContractIssue['severity']) => {
+  if (!monacoInstance.value) return 8;
+  if (severity === 'error') return monacoInstance.value.MarkerSeverity.Error;
+  if (severity === 'warning') return monacoInstance.value.MarkerSeverity.Warning;
+  return monacoInstance.value.MarkerSeverity.Info;
+};
+
+const updateContractMarkers = (issues: TContractIssue[]) => {
+  if (!editor || !monacoInstance.value) return;
+  const model = editor.getModel();
+  if (!model) return;
+
+  monacoInstance.value.editor.setModelMarkers(model, 'contract-validator', issues
+    .filter(issue => issue.line)
+    .map(issue => ({
+      startLineNumber: issue.line!,
+      startColumn: issue.column || 1,
+      endLineNumber: issue.line!,
+      endColumn: model.getLineMaxColumn(issue.line!),
+      message: `${issue.title}: ${issue.message}`,
+      severity: markerSeverity(issue.severity),
+    })));
+};
+
 const applyFix = () => {
-  if (appStore.format === 'json') {
-    const fixed = SafeJsonParser.fix(appStore.rawInput);
-    if (fixed !== appStore.rawInput) {
+  if (documentStore.format === 'json') {
+    const fixed = SafeJsonParser.fix(documentStore.rawInput);
+    if (fixed !== documentStore.rawInput) {
       editor?.setValue(fixed);
     }
   }
@@ -271,31 +303,33 @@ onMounted(async () => {
   if (editorContainer.value) {
     const monacoStuff = await initMonaco(editorContainer.value, {
       ...editorOptions.value,
-      value: appStore.rawInput,
-      language: appStore.format,
+      value: documentStore.rawInput,
+      language: documentStore.format,
       padding: { bottom: 200 }
     });
 
     editor = monacoStuff.editor;
 
-    historyStore.pushState(appStore.rawInput);
+    historyStore.pushState(documentStore.rawInput);
+    updateContractMarkers(documentStore.contractIssues);
+    if (documentStore.errors[0]) {
+      updateParseMarkers(documentStore.errors[0].message, { line: documentStore.errors[0].line, column: documentStore.errors[0].column });
+    }
 
     editor?.onDidChangeModelContent(() => {
       const value = editor?.getValue() || '';
-      appStore.setRawInput(value);
+      documentStore.setRawInput(value);
       historyStore.pushState(value);
 
       const newFormat = detectFormat(value);
-      if (newFormat !== appStore.format) {
-        appStore.setFormat(newFormat);
+      if (newFormat !== documentStore.format) {
+        documentStore.setFormat(newFormat);
       }
-
-      validateContent();
     });
   }
 });
 
-watch(() => appStore.format, (newFormat) => {
+watch(() => documentStore.format, (newFormat) => {
   if (editor && monacoInstance.value) {
     const model = editor.getModel();
     if (model) {
@@ -304,10 +338,9 @@ watch(() => appStore.format, (newFormat) => {
   }
 });
 
-watch(() => appStore.rawInput, (newInput) => {
+watch(() => documentStore.rawInput, (newInput) => {
   if (editor && editor.getValue() !== newInput) {
     editor.setValue(newInput);
-    validateContent();
   }
 });
 

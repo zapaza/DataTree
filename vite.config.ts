@@ -34,9 +34,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'DataTree - Professional JSON/XML Visualizer',
+        name: 'DataTree - Local API Payload Inspector',
         short_name: 'DataTree',
-        description: 'Professional tool for visualization, analysis, and conversion of JSON and XML structures.',
+        description: 'Local API payload inspector for JSON and XML: inspect, validate, compare, and transform data in your browser.',
         theme_color: '#2563eb',
         background_color: '#ffffff',
         display: 'standalone',
@@ -73,10 +73,18 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor': ['vue', 'pinia'],
-          'editor': ['jsonc-parser', 'fast-xml-parser', 'zod'],
-          'tree': [],
+        manualChunks(id) {
+          if (id.includes('node_modules/monaco-editor')) return 'monaco-editor';
+          if (id.includes('node_modules/vue') || id.includes('node_modules/pinia')) return 'vendor';
+          if (
+            id.includes('node_modules/jsonc-parser') ||
+            id.includes('node_modules/fast-xml-parser') ||
+            id.includes('node_modules/zod') ||
+            id.includes('node_modules/ajv') ||
+            id.includes('node_modules/ajv-formats')
+          ) {
+            return 'parser-tools';
+          }
         },
       },
     },

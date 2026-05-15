@@ -1,11 +1,19 @@
 import { defineStore } from 'pinia';
 import { ref, watch } from 'vue';
-import type { TAppSettings } from '@/types/store';
+import type { TAppSettings, TLocale } from '@/types/store';
 
 const STORAGE_KEY = 'datatree_settings_v2';
 
+const detectLocale = (): TLocale => {
+  if (typeof navigator !== 'undefined' && navigator.language.toLowerCase().startsWith('ru')) {
+    return 'ru';
+  }
+  return 'en';
+};
+
 const DEFAULT_SETTINGS: TAppSettings = {
   theme: 'light',
+  locale: detectLocale(),
   editor: {
     fontSize: 14,
     fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
@@ -68,6 +76,10 @@ export const useSettingsStore = defineStore('settings', () => {
     settings.value = { ...settings.value, ...newSettings };
   };
 
+  const updateLocale = (locale: TLocale) => {
+    settings.value.locale = locale;
+  };
+
   const updateEditorSettings = (newSettings: Partial<TAppSettings['editor']>) => {
     settings.value.editor = { ...settings.value.editor, ...newSettings };
   };
@@ -118,6 +130,7 @@ export const useSettingsStore = defineStore('settings', () => {
   return {
     settings,
     updateSettings,
+    updateLocale,
     updateEditorSettings,
     updateTreeSettings,
     updatePrivacySettings,

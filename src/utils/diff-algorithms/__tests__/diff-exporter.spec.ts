@@ -16,6 +16,42 @@ describe('DiffExporter', () => {
       modified: 1,
       unchanged: 1
     },
+    riskSummary: {
+      breaking: 1,
+      nonBreaking: 1,
+      warnings: 0,
+      neutral: 1
+    },
+    pathSummary: [
+      {
+        path: '/',
+        displayPath: '/',
+        total: 3,
+        added: 1,
+        removed: 1,
+        modified: 1,
+        breaking: 1,
+        nonBreaking: 1,
+        warnings: 0
+      }
+    ],
+    contractDiff: {
+      changes: [
+        {
+          path: '/properties/old',
+          displayPath: '$/old',
+          risk: 'breaking',
+          title: 'Removed required field',
+          detail: 'A required field disappeared from the contract.'
+        }
+      ],
+      summary: {
+        breaking: 1,
+        nonBreaking: 0,
+        warnings: 0,
+        neutral: 0
+      }
+    },
     patch: [
       { op: 'add', path: '/foo', value: 'bar' },
       { op: 'remove', path: '/old' },
@@ -33,9 +69,9 @@ describe('DiffExporter', () => {
   it('should generate valid CSV', () => {
     const result = DiffExporter.toCSV(mockDiffResult);
     const lines = result.split('\n');
-    expect(lines[0]).toBe('Path,Type,Old Value,New Value');
-    expect(lines[1]).toContain('"/foo","added","","bar"');
-    expect(lines[2]).toContain('"/old","removed","123",""');
+    expect(lines[0]).toBe('Path,Display Path,Type,Risk,Reason,Old Value,New Value');
+    expect(lines[1]).toContain('"/foo","/foo","added"');
+    expect(lines[2]).toContain('"/old","/old","removed"');
     // Check that unchanged items are excluded
     expect(result).not.toContain('"/same"');
   });
@@ -46,6 +82,9 @@ describe('DiffExporter', () => {
     expect(result).toContain('Added: 1');
     expect(result).toContain('Removed: 1');
     expect(result).toContain('Modified: 1');
+    expect(result).toContain('Breaking: 1');
+    expect(result).toContain('Summary by Path');
+    expect(result).toContain('Contract Diff');
     expect(result).toContain('/foo');
     expect(result).toContain('/old');
     expect(result).toContain('/obj');

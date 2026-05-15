@@ -1,10 +1,7 @@
-import * as monaco from 'monaco-editor/esm/vs/editor/edcore.main.js';
-import 'monaco-editor/esm/vs/language/json/monaco.contribution.js';
-import 'monaco-editor/esm/vs/basic-languages/xml/xml.contribution.js';
-import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
-import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
 import type * as Monaco from 'monaco-editor';
 import { shallowRef, onBeforeUnmount, onUnmounted } from 'vue';
+
+type TWorkerConstructor = new () => Worker;
 
 type MonacoWorkerEnvironment = typeof globalThis & {
   MonacoEnvironment?: {
@@ -12,19 +9,70 @@ type MonacoWorkerEnvironment = typeof globalThis & {
   };
 };
 
-(globalThis as MonacoWorkerEnvironment).MonacoEnvironment = {
-  getWorker(_moduleId: string, label: string) {
-    if (label === 'json') {
-      return new JsonWorker();
-    }
+type MonacoJsonDefaults = typeof Monaco & {
+  languages?: typeof Monaco.languages & {
+    json?: {
+      jsonDefaults?: {
+        setDiagnosticsOptions: (options: {
+          validate: boolean;
+          allowComments?: boolean;
+          trailingCommas?: 'error' | 'warning' | 'ignore';
+        }) => void;
+      };
+    };
+  };
+};
 
-    return new EditorWorker();
-  },
+const disableJsonDiagnosticsIfAvailable = (monacoNamespace: typeof Monaco) => {
+  try {
+    const jsonDefaults = (monacoNamespace as unknown as MonacoJsonDefaults).languages?.json?.jsonDefaults;
+    jsonDefaults?.setDiagnosticsOptions({
+      validate: false,
+      allowComments: true,
+      trailingCommas: 'ignore',
+    });
+  } catch {
+    // Some Monaco ESM entrypoints expose JSON language support without jsonDefaults.
+    // Parser markers are managed by DataTree, so this optimization is optional.
+  }
+};
+
+let monacoLoader: Promise<typeof Monaco> | null = null;
+
+const loadMonaco = async (): Promise<typeof Monaco> => {
+  if (!monacoLoader) {
+    monacoLoader = Promise.all([
+      import('monaco-editor/esm/vs/editor/edcore.main.js'),
+      import('monaco-editor/esm/vs/language/json/monaco.contribution.js'),
+      import('monaco-editor/esm/vs/basic-languages/xml/xml.contribution.js'),
+      import('monaco-editor/esm/vs/editor/editor.worker?worker'),
+      import('monaco-editor/esm/vs/language/json/json.worker?worker'),
+    ]).then(([monacoNamespace, , , editorWorkerModule, jsonWorkerModule]) => {
+      const EditorWorker = editorWorkerModule.default as TWorkerConstructor;
+      const JsonWorker = jsonWorkerModule.default as TWorkerConstructor;
+
+      (globalThis as MonacoWorkerEnvironment).MonacoEnvironment = {
+        getWorker(_moduleId: string, label: string) {
+          if (label === 'json') {
+            return new JsonWorker();
+          }
+
+          return new EditorWorker();
+        },
+      };
+
+      disableJsonDiagnosticsIfAvailable(monacoNamespace as unknown as typeof Monaco);
+
+      return monacoNamespace as unknown as typeof Monaco;
+    });
+  }
+
+  return monacoLoader;
 };
 
 /**
  * Composable for initializing and managing a Monaco Editor instance.
- * Handles lazy loading of Monaco from CDN and automatic resource cleanup.
+ * Handles lazy loading of the local Monaco bundle and automatic resource cleanup.
  *
  * @returns Object with init function and a reactive reference to the monaco namespace.
  */
@@ -44,7 +92,7 @@ export default function useMonaco() {
     options: Monaco.editor.IStandaloneEditorConstructionOptions
   ) => {
     try {
-      const monacoNamespace = monaco as unknown as typeof Monaco;
+      const monacoNamespace = await loadMonaco();
 
       if (isUnmounted) {
         return { monaco: monacoNamespace, editor: null };

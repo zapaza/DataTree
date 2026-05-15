@@ -3,12 +3,9 @@ import type { JsonValue } from '@/types/json';
 export type TPathFormat = 'js' | 'jsonpath' | 'xpath';
 
 export default class PathUtils {
-  public static getNodePath(path: string, format: TPathFormat): string {
-    if (!path) return '';
+  public static getNodePath(path: string | string[], format: TPathFormat): string {
+    const parts = Array.isArray(path) ? [...path] : this.pathStringToParts(path);
 
-    const parts = path.split('.');
-
-    // Удаляем 'root' если он есть в начале
     if (parts[0] === 'root') {
       parts.shift();
     }
@@ -29,21 +26,60 @@ export default class PathUtils {
     }
   }
 
+  private static pathStringToParts(path: string): string[] {
+    if (!path) return [];
+    return path.split('.');
+  }
+
+  private static isArrayIndex(part: string): boolean {
+    return /^\[\d+\]$/.test(part);
+  }
+
+  private static isSafeJsIdentifier(part: string): boolean {
+    return /^[$A-Z_a-z][$\w]*$/.test(part);
+  }
+
+  private static isSafeJsonPathKey(part: string): boolean {
+    return /^[A-Z_a-z][$\w]*$/.test(part);
+  }
+
+  private static isSafeXPathName(part: string): boolean {
+    return /^[A-Za-z_][\w.-]*$/.test(part);
+  }
+
+  private static quoteJsonPathKey(part: string): string {
+    return `['${part.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}']`;
+  }
+
+  private static toXPathLiteral(value: string): string {
+    if (!value.includes('"')) return `"${value}"`;
+    if (!value.includes("'")) return `'${value}'`;
+
+    const pieces = value.split('"').map(piece => `"${piece}"`);
+    return `concat(${pieces.join(', \'"\', ')})`;
+  }
+
   private static toJsPath(parts: string[]): string {
     return parts.map((part, index) => {
-      if (part.startsWith('[') && part.endsWith(']')) {
+      if (this.isArrayIndex(part)) {
         return part;
       }
-      return index === 0 ? part : `.${part}`;
+      if (this.isSafeJsIdentifier(part)) {
+        return index === 0 ? part : `.${part}`;
+      }
+      return `[${JSON.stringify(part)}]`;
     }).join('');
   }
 
   private static toJsonPath(parts: string[]): string {
     const path = parts.map(part => {
-      if (part.startsWith('[') && part.endsWith(']')) {
+      if (this.isArrayIndex(part)) {
         return part;
       }
-      return `.${part}`;
+      if (this.isSafeJsonPathKey(part)) {
+        return `.${part}`;
+      }
+      return this.quoteJsonPathKey(part);
     }).join('');
     return '$' + path;
   }
@@ -55,6 +91,9 @@ export default class PathUtils {
         // XPath индексы начинаются с 1
         const index = parseInt(arrayMatch[1], 10) + 1;
         return `*[${index}]`;
+      }
+      if (!this.isSafeXPathName(part)) {
+        return `*[name()=${this.toXPathLiteral(part)}]`;
       }
       return part;
     }).join('/');

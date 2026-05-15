@@ -5,6 +5,7 @@ export interface TExample {
   description: string;
   format: 'json' | 'xml';
   content: string;
+  schema?: string;
 }
 
 export const EXAMPLES: TExample[] = [
@@ -31,7 +32,7 @@ export const EXAMPLES: TExample[] = [
   },
   {
     id: 'api-response',
-    name: 'API Product List',
+    name: 'REST Response',
     category: 'api',
     description: 'Typical REST API response for a list of products.',
     format: 'json',
@@ -59,6 +60,81 @@ export const EXAMPLES: TExample[] = [
     "total": 2,
     "limit": 10,
     "skip": 0
+  }
+}`
+  },
+  {
+    id: 'error-payload',
+    name: 'Error Payload',
+    category: 'api',
+    description: 'Production-style API error with request metadata.',
+    format: 'json',
+    content: `{
+  "error": {
+    "code": "PAYMENT_METHOD_DECLINED",
+    "message": "The payment method was declined by the issuer.",
+    "status": 402,
+    "retryable": false,
+    "requestId": "req_01HXZ8Q9Q4M7P7E2K8R6",
+    "timestamp": "2026-05-14T07:24:12Z",
+    "details": [
+      {
+        "field": "paymentMethod.id",
+        "reason": "card_declined"
+      }
+    ]
+  }
+}`
+  },
+  {
+    id: 'openapi-like-payload',
+    name: 'OpenAPI-like Payload',
+    category: 'api',
+    description: 'Endpoint description shaped like a compact OpenAPI document.',
+    format: 'json',
+    content: `{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Billing API",
+    "version": "2026-05-14"
+  },
+  "paths": {
+    "/v1/invoices/{invoiceId}": {
+      "get": {
+        "operationId": "getInvoice",
+        "parameters": [
+          {
+            "name": "invoiceId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invoice response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Invoice" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Invoice": {
+        "type": "object",
+        "required": ["id", "status", "total"],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "status": { "type": "string", "enum": ["draft", "open", "paid"] },
+          "total": { "type": "number" }
+        }
+      }
+    }
   }
 }`
   },
@@ -99,6 +175,50 @@ export const EXAMPLES: TExample[] = [
             }
           }
         }
+      }
+    }
+  }
+}`
+  },
+  {
+    id: 'schema-validation-demo',
+    name: 'JSON Schema Demo',
+    category: 'api',
+    description: 'Payload with a matching JSON Schema for the Schema tab.',
+    format: 'json',
+    content: `{
+  "id": 42,
+  "name": "Ada Lovelace",
+  "email": "ada@example.com",
+  "roles": ["admin", "developer"],
+  "active": true,
+  "profile": {
+    "age": 36,
+    "department": "Research"
+  }
+}`,
+    schema: `{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UserPayload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "email", "roles", "active", "profile"],
+  "properties": {
+    "id": { "type": "integer" },
+    "name": { "type": "string" },
+    "email": { "type": "string", "format": "email" },
+    "roles": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "active": { "type": "boolean" },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["age", "department"],
+      "properties": {
+        "age": { "type": "integer" },
+        "department": { "type": "string" }
       }
     }
   }
@@ -156,6 +276,25 @@ export const EXAMPLES: TExample[] = [
     <YEAR>1988</YEAR>
   </CD>
 </CATALOG>`
+  },
+  {
+    id: 'xml-service-config',
+    name: 'XML Config',
+    category: 'xml',
+    description: 'Service configuration with attributes and text nodes.',
+    format: 'xml',
+    content: `<service name="billing-api" environment="staging">
+  <database host="db.internal" port="5432">
+    <pool min="2" max="12" />
+  </database>
+  <features>
+    <feature enabled="true">invoice-search</feature>
+    <feature enabled="false">legacy-export</feature>
+  </features>
+  <secrets>
+    <token>replace-me-before-sharing</token>
+  </secrets>
+</service>`
   },
   {
     id: 'complex-mixed',

@@ -11,6 +11,8 @@
       class="node-header flex items-center gap-1.5 h-6 rounded cursor-pointer group select-none transition-colors border-l border-transparent"
       :class="[
         isSelected ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ring-1 ring-blue-200 dark:ring-blue-800 shadow-sm' : 'hover:bg-gray-100/50 dark:hover:bg-white/5',
+        validationIssue ? 'border-l-2 border-red-500 bg-red-50/80 dark:bg-red-900/20' : '',
+        isActiveValidationIssue ? 'ring-2 ring-red-400 dark:ring-red-700' : '',
         isCurrentSearchMatch ? 'ring-2 ring-yellow-400 bg-yellow-50 dark:bg-yellow-900/30' : (isSearchMatch ? 'bg-yellow-100/50 dark:bg-yellow-900/20' : ''),
         { 'transition-all duration-200': settingsStore.settings.tree.animate }
       ]"
@@ -54,6 +56,7 @@
         v-if="contextMenu"
         :node="node"
         :path="path"
+        :path-segments="pathSegments"
         :x="contextMenu.x"
         :y="contextMenu.y"
         @close="closeContextMenu"
@@ -68,11 +71,13 @@ import type { TTreeNode } from '@/types/store';
 import useTreeNode from '@/composables/useTreeNode';
 import { useTreeStore } from '@/stores/treeStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useDocumentStore } from '@/stores/documentStore';
 import TreeNodeContextMenu from './TreeNodeContextMenu.vue';
 
 interface Props {
   node: TTreeNode;
   path: string;
+  pathSegments: string[];
   depth: number;
 }
 
@@ -80,6 +85,7 @@ const props = defineProps<Props>();
 
 const treeStore = useTreeStore();
 const settingsStore = useSettingsStore();
+const documentStore = useDocumentStore();
 const { isExpandable, iconClass, valueColorClass, formattedValue } = useTreeNode(() => props.node, () => props.path);
 
 const isExpanded = computed(() => treeStore.isExpanded(props.path));
@@ -99,13 +105,16 @@ const closeContextMenu = () => {
 
 const isSearchMatch = computed(() => {
   if (!treeStore.searchQuery) return false;
-  return treeStore.searchResults.includes(props.path);
+  return treeStore.searchResultsSet.has(props.path);
 });
 
 const isCurrentSearchMatch = computed(() => {
   if (!treeStore.searchQuery || treeStore.currentSearchIndex === -1) return false;
   return treeStore.searchResults[treeStore.currentSearchIndex] === props.path;
 });
+
+const validationIssue = computed(() => documentStore.contractIssues.find(issue => issue.path === props.path));
+const isActiveValidationIssue = computed(() => documentStore.activeContractIssue?.path === props.path);
 
 const toggle = (e: MouseEvent) => {
   e.stopPropagation();

@@ -52,5 +52,50 @@ describe('SafeJsonParser', () => {
       const fixed = SafeJsonParser.fix(json);
       expect(JSON.parse(fixed)).toEqual({ key: "value", num: 123 });
     });
+
+    it('should not rewrite key-like text inside valid strings', () => {
+      const json = '{"note":"{key: value}","url":"https://example.com?a:b","text":"name: Ada"}';
+      const fixed = SafeJsonParser.fix(json);
+
+      expect(fixed).toBe(json);
+      expect(JSON.parse(fixed)).toEqual({
+        note: '{key: value}',
+        url: 'https://example.com?a:b',
+        text: 'name: Ada',
+      });
+    });
+
+    it('should only quote unquoted object keys outside strings', () => {
+      const json = '{user: {name: "Ada", note: "{role: admin}"}, list: [{id: 1, value: "x:y"}]}';
+      const fixed = SafeJsonParser.fix(json);
+
+      expect(JSON.parse(fixed)).toEqual({
+        user: { name: 'Ada', note: '{role: admin}' },
+        list: [{ id: 1, value: 'x:y' }],
+      });
+    });
+
+    it('should convert single quoted keys without touching string values', () => {
+      const json = "{'user': { 'name': \"Ada\", \"note\": \"'role': admin\" }}";
+      const fixed = SafeJsonParser.fix(json);
+
+      expect(JSON.parse(fixed)).toEqual({
+        user: { name: 'Ada', note: "'role': admin" },
+      });
+    });
+
+    it('should preserve valid JSON across key-like fuzz samples', () => {
+      const samples = [
+        { note: 'key: value', nested: '{foo: bar}', list: ['a:b', '{id: 1}'] },
+        { url: 'https://example.test/path?a:b', css: 'color: red; padding: 4px' },
+        { quote: '\\"key\\": still text', bracket: 'value} more text' },
+      ];
+
+      samples.forEach((sample) => {
+        const json = JSON.stringify(sample);
+        const fixed = SafeJsonParser.fix(json);
+        expect(JSON.parse(fixed)).toEqual(sample);
+      });
+    });
   });
 });

@@ -46,12 +46,9 @@ describe('json-diff', () => {
     const b = [1, 4, 3];
     const result = diffJson(a, b);
 
-    // 1 -> unchanged, 2 -> removed, 4 -> added, 3 -> unchanged
-    // note: my current impl might treat it as modified if I don't use LCS correctly for replacement
-    // actually LCS says 1, 3 are unchanged. 2 is removed, 4 is added.
-    expect(result.stats.removed).toBe(1);
-    expect(result.stats.added).toBe(1);
+    expect(result.stats.modified).toBe(1);
     expect(result.stats.unchanged).toBe(2);
+    expect(result.patch).toContainEqual({ op: 'replace', path: '/1', value: 4 });
   });
 
   it('should handle array comparison without order', () => {
@@ -62,5 +59,47 @@ describe('json-diff', () => {
     expect(result.stats.unchanged).toBe(3);
     expect(result.stats.added).toBe(0);
     expect(result.stats.removed).toBe(0);
+  });
+
+  it('should ignore configured keys and volatile fields', () => {
+    const a = { id: 1, timestamp: '2024-01-01T00:00:00Z', debug: true };
+    const b = { id: 1, timestamp: '2025-01-01T00:00:00Z', debug: false };
+    const result = diffJson(a, b, {
+      ignoreKeys: ['debug'],
+      ignoreVolatileFields: true,
+      volatileKeys: ['timestamp'],
+    });
+
+    expect(result.stats.modified).toBe(0);
+    expect(result.changes.every(change => change.type === 'unchanged')).toBe(true);
+  });
+
+  it('should compare arrays by stable object key', () => {
+    const a = { users: [{ id: 1, name: 'Ann' }, { id: 2, name: 'Bob' }] };
+    const b = { users: [{ id: 2, name: 'Bobby' }, { id: 1, name: 'Ann' }] };
+    const result = diffJson(a, b, { compareArrayByKey: 'id' });
+
+    expect(result.stats.modified).toBe(1);
+    expect(result.changes.find(change => change.displayPath === '/users[id=2]/name')).toMatchObject({
+      type: 'modified',
+      oldValue: 'Bob',
+      newValue: 'Bobby',
+    });
+  });
+
+  it('should normalize dates and ignore type-only differences', () => {
+    const a = { id: '1', createdAt: '2024-01-01T00:00:00.000Z' };
+    const b = { id: 1, createdAt: '2024-01-01' };
+    const result = diffJson(a, b, { ignoreTypeDiff: true, normalizeDates: true });
+
+    expect(result.stats.modified).toBe(0);
+  });
+
+  it('should classify removed fields and type changes as breaking', () => {
+    const result = diffJson({ id: '1', name: 'Ada' }, { id: 1 });
+
+    expect(result.riskSummary.breaking).toBe(2);
+    expect(result.changes.find(change => change.path === '/name')).toMatchObject({ risk: 'breaking' });
+    expect(result.changes.find(change => change.path === '/id')).toMatchObject({ risk: 'breaking' });
   });
 });

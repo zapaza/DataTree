@@ -2,7 +2,7 @@
   <div class="p-4 space-y-4">
     <h3 class="text-xs font-bold uppercase text-light tracking-wider flex items-center gap-2">
       <div class="i-carbon-export" />
-      Export Diff
+      {{ t('compare.exportTitle') }}
     </h3>
 
     <div class="grid grid-cols-1 gap-2">
@@ -24,41 +24,44 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useDiffStore } from '@/stores/diffStore';
 import useDiffExporter from '@/composables/useDiffExporter';
+import useI18n from '@/composables/useI18n';
 
 const diffStore = useDiffStore();
 const { exportAsJsonPatch, exportAsCSV, exportAsUnifiedDiff, exportAsHTML } = useDiffExporter();
+const { t } = useI18n();
 
-const exportFormats = [
+const exportFormats = computed(() => [
   {
     id: 'json-patch',
     label: 'JSON Patch',
-    description: 'RFC 6902 Standard',
+    description: t('compare.exportDescriptions.jsonPatch'),
     icon: 'i-carbon-json',
     action: exportAsJsonPatch
   },
   {
     id: 'unified-diff',
     label: 'Unified Diff',
-    description: 'Git-style .patch file',
+    description: t('compare.exportDescriptions.unifiedDiff'),
     icon: 'i-carbon-script',
     action: exportAsUnifiedDiff
   },
   {
     id: 'html-report',
     label: 'HTML Report',
-    description: 'Visual standalone report',
+    description: t('compare.exportDescriptions.htmlReport'),
     icon: 'i-carbon-document-pdf',
     action: exportAsHTML
   },
   {
     id: 'csv-stats',
     label: 'CSV Statistics',
-    description: 'Raw data for Excel',
+    description: t('compare.exportDescriptions.csvStats'),
     icon: 'i-carbon-table',
     action: exportAsCSV
   }
-];
+]);
 
 </script>

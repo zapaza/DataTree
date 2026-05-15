@@ -8,6 +8,7 @@ export const useTreeStore = defineStore('tree', () => {
 
   const searchQuery = ref('');
   const searchResults = ref<string[]>([]);
+  const searchResultsSet = ref<Set<string>>(new Set());
   const currentSearchIndex = ref(-1);
 
   const toggleNode = (path: string) => {
@@ -34,6 +35,7 @@ export const useTreeStore = defineStore('tree', () => {
   const setSearchResults = (query: string, paths: string[]) => {
     searchQuery.value = query;
     searchResults.value = paths;
+    searchResultsSet.value = new Set(paths);
     currentSearchIndex.value = paths.length > 0 ? 0 : -1;
   };
 
@@ -74,6 +76,7 @@ export const useTreeStore = defineStore('tree', () => {
     selectedPath,
     searchQuery,
     searchResults,
+    searchResultsSet,
     currentSearchIndex,
     toggleNode,
     expandToPath,
