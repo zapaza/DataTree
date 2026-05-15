@@ -15,7 +15,7 @@ import { onMounted } from 'vue'
 const diffStore = useDiffStore()
 
 onMounted(() => {
-  diffStore.setMode('diff')
+  diffStore.setMode('compare')
   diffStore.initPersistence()
 })
 </script>

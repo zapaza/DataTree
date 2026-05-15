@@ -1,5 +1,5 @@
 import type { TDataType } from '@/types/editor'
-import type { TDiffResult, TDiffTreeNode } from '@/types/diff'
+import type { TDiffOptions, TDiffResult, TDiffTreeNode } from '@/types/diff'
 
 export type TDiffSessionId = string
 
@@ -14,6 +14,7 @@ export interface TDiffSession {
   leftFormat: TDataType
   rightFormat: TDataType
   showOnlyChanges: boolean
+  diffOptions?: TDiffOptions
 
   // Optional cached diff (may be null for huge files)
   diffResult?: TDiffResult | null

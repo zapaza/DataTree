@@ -1,4 +1,5 @@
 import type { TDataType } from '../types/editor';
+import { detectPayloadFormat } from '@/utils/format-detector';
 
 /**
  * Composable for automatically detecting the format (JSON or XML) of a string.
@@ -10,17 +11,7 @@ export default function useFormatDetector() {
    * @returns 'xml' if it starts with '<', otherwise 'json'.
    */
   const detectFormat = (content: string): TDataType => {
-    const trimmed = content.trim();
-
-    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
-      return 'json';
-    }
-
-    if (trimmed.startsWith('<')) {
-      return 'xml';
-    }
-
-    return 'json'; // По умолчанию JSON
+    return detectPayloadFormat(content);
   };
 
   return {

@@ -16,7 +16,9 @@ describe('HistoryDB', () => {
       content: '{"a": 1}',
       format: 'json',
       isValid: true,
-      nodesCount: 2
+      nodesCount: 2,
+      mode: 'inspect',
+      operationType: 'autosave'
     };
 
     const id = await db.save(item);
@@ -33,7 +35,9 @@ describe('HistoryDB', () => {
       content: 'test',
       format: 'json',
       isValid: true,
-      nodesCount: 1
+      nodesCount: 1,
+      mode: 'inspect',
+      operationType: 'autosave'
     };
 
     const id = await db.save(item);
@@ -50,7 +54,9 @@ describe('HistoryDB', () => {
         content: `item ${i}`,
         format: 'json',
         isValid: true,
-        nodesCount: 1
+        nodesCount: 1,
+        mode: 'inspect',
+        operationType: 'autosave'
       });
     }
 

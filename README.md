@@ -1,88 +1,142 @@
-# DataTree - Professional JSON/XML Visualizer & Diff Tool
+# DataTree
 
-![Version](https://img.shields.io/badge/version-0.1.0--alpha-blue)
+[Русская версия](./README.ru.md)
+
+![Version](https://img.shields.io/badge/version-0.1.0-blue)
 ![Vue](https://img.shields.io/badge/vue-3.5-green)
+![Privacy](https://img.shields.io/badge/privacy-local--only-success)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-Professional tool for visualizing, analyzing, and comparing JSON and XML structures directly in the browser. Built using modern technologies and focused on performance and developer convenience.
+Local API Payload Inspector for developers who need to understand, validate, compare, and prepare JSON/XML payloads quickly without uploading sensitive data.
 
 **Live Demo:** [datatree.space-dev.tech](https://datatree.space-dev.tech)
 
-![DataTree Interface](./public/d08d4c58df1545545114323379e35313_1767894518.png)
+![DataTree Inspect](./public/d08d4c58df1545545114323379e35313_1767894518.png)
+![DataTree Transform](./public/screenshots/transform-mode.png)
 
-## ✨ Features
+## Positioning
 
-### 🔍 Core Functionality
-- **Syntax Highlighting** for JSON and XML based on Monaco Editor.
-- **Tree View** with virtualization for instant rendering of large structures.
-- **Comparison Engine (Diff)**: Compare two JSON/XML files with structural analysis.
-- **Format Auto-detection** and on-the-fly validation.
-- **Search** through keys and values with automatic scrolling to results.
-- **Path Copying** in JS, JSONPath, and XPath formats.
+DataTree is not a chat assistant. It is a local, offline-ready workbench for API payloads:
 
-### ⚖️ Comparison (Diff) Engine
-- **LCS Algorithm**: Optimized Longest Common Subsequence for accurate structural diffing.
-- **Performance**: High-speed comparison with DP and fast-path fallbacks for large files.
-- **Side-by-Side View**: Dual-editor interface with synchronized scrolling and change highlighting.
-- **Diff Tree**: Specialized tree view to visualize structural additions, removals, and modifications.
-- **Export Formats**: Export comparison results as JSON Patch (RFC 6902), CSV, Unified Diff, or a self-contained HTML report.
-- **Lazy Loading**: Smooth UI even with thousands of detected changes.
+- inspect a response in seconds;
+- generate and validate contracts;
+- compare payloads semantically;
+- transform payloads for tickets, docs, tests, and pull requests.
 
-### 🔧 Tools and Transformations
-- **Conversion** between JSON and XML while preserving structure.
-- **Formatting and Minification** of JSON.
-- **Schema Validation** (Simple Zod-like schema).
-- **Intelligent Auto-fix** for common JSON errors.
-- **Document Statistics**: node count, depth, type distribution, and parsing time.
+Everything runs in your browser.
 
-### ⚡ Performance and Offline
-- **Local-only Processing**: JSON/XML content is parsed, visualized, transformed, and stored in your browser.
-- **Web Workers**: Parsing and Diffing are performed in background threads to keep the UI responsive.
-- **Smart Caching**: In-memory caching for diff results to ensure instant navigation.
-- **Virtual Scrolling**: Smooth operation with data up to 10 MB (600k+ nodes).
-- **PWA**: Ability to install on desktop and full offline operation.
-- **Operation History**: Automatic state saving in IndexedDB for both editor and diff sessions.
+## Product Modes
 
-## 🛠 Technologies
-- **Vue 3** (Composition API, `<script setup>`)
-- **Vite** — ultra-fast build tool
-- **Pinia** — centralized state management
-- **Monaco Editor** — powerful code editor
-- **UnoCSS** — atomic CSS engine with Carbon and Icons presets
-- **Vitest** — unit and performance testing
-- **fast-xml-parser** — fast XML processing
-- **zod** — schema validation
+### Inspect
 
-## 🚀 Quick Start
+- Virtualized payload tree for JSON and XML.
+- Search, copy values, copy JSON paths, JS paths, JSONPath, and XPath.
+- Smart insights for secrets, nullables, empty collections, mixed arrays, duplicate ids, deep paths, large branches, and date-like fields.
+- JSONPath and XPath query/extract with JSON/CSV copy.
 
-### Online Usage
-1. Open [datatree.space-dev.tech](https://datatree.space-dev.tech)
-2. Paste text or drag a file into the editor area.
-3. Explore the structure in the visualizer on the right.
+### Validate
 
-### Development
+- Generate JSON Schema, TypeScript interfaces, and Zod schemas from a payload.
+- Validate payloads with AJV and JSON Schema draft 2020-12.
+- See contract issues with severity, paths, and source locations.
+- Analyze required/optional fields, nullable fields, enum candidates, array shapes, and format hints.
+
+### Compare
+
+- Semantic diff for JSON/XML payloads.
+- Ignore keys, volatile fields, array order, type-only differences, and normalized dates.
+- Compare arrays by stable keys such as `id`, `uuid`, or `name`.
+- Classify changes as breaking, non-breaking, warning, or neutral.
+- Export JSON Patch, CSV, unified diff, and HTML reports.
+
+### Transform
+
+- Format, minify, and sort JSON.
+- Convert JSON ↔ XML with configurable attribute and text-node handling.
+- Flatten JSON/XML payloads into CSV/table previews.
+- Redact secrets with common key rules and custom rules before sharing payloads.
+- Generate TypeScript, Zod, JSON Schema, and typed fetch/axios snippets.
+
+## Fast Onboarding Examples
+
+The app ships with local examples for realistic developer workflows:
+
+- REST response;
+- error payload;
+- OpenAPI-like payload;
+- XML service config;
+- JSON Schema validation payload;
+- package/config examples.
+
+Open the command palette with `Cmd/Ctrl + K` and load an example instantly.
+
+## Privacy Promise
+
+DataTree is local-first:
+
+- payloads are parsed, inspected, validated, compared, transformed, and stored in your browser;
+- payload content is not uploaded to a parsing or AI service;
+- Monaco, fonts, workers, and PWA assets are bundled locally;
+- analytics are opt-in and disabled by default;
+- Webvisor/clickmap session recording is disabled.
+
+When analytics are enabled, DataTree only sends anonymous product usage events such as page views and feature actions. Payload content is never sent.
+
+## Why Not Just AI?
+
+AI is useful for explanations, but payload work often needs deterministic tooling:
+
+- instant local parsing for large or sensitive payloads;
+- repeatable schema/type generation;
+- exact JSONPath/XPath extraction;
+- semantic diff reports that can be copied into PRs;
+- redaction before anything is shared;
+- offline use during debugging, incidents, and private client work.
+
+DataTree is the tool you use before asking AI, or instead of AI when the task is mechanical, sensitive, or needs exact output.
+
+## Quality Gates
+
 ```bash
-# Clone the repository
-git clone https://github.com/zapaza/DataTree.git
-cd datatree
-
-# Install dependencies
-npm install
-
-# Start dev server
-npm run dev
-
-# Type check
 npm run type-check
-
-# Build and optimize
+npm run lint
+npm run test:unit:run
+npm run test:performance
+npm run test:smoke
 npm run build
 ```
 
-## 📈 Analytics and Privacy
-DataTree is local-first: your JSON/XML payloads are processed in the browser and are not uploaded to a server for parsing, visualization, diffing, conversion, or history storage.
+`npm run quality` runs type-check, lint, unit tests, and build.
 
-Analytics are opt-in and disabled by default. If enabled in Settings, DataTree loads Yandex Metrica only for anonymous product usage events such as page views and feature actions. Payload content is never sent, and Webvisor/clickmap session recording is disabled.
+Current coverage includes:
 
-## 📄 License
+- schema/type/Zod generation tests;
+- AJV JSON Schema validation tests;
+- semantic diff tests;
+- transform tests for XML, CSV, redaction, and codegen;
+- performance tests for large parse/transform/stats plus insights/query;
+- product smoke tests for Inspect, Validate, Compare, Transform engines;
+- PWA asset/config smoke checks.
+
+## Development
+
+```bash
+git clone https://github.com/zapaza/DataTree.git
+cd datatree
+npm install
+npm run dev
+```
+
+## Tech Stack
+
+- Vue 3, Vite, TypeScript, Pinia;
+- Monaco Editor;
+- UnoCSS and Carbon icons;
+- Web Workers for parsing, filtering, and diffing;
+- AJV, Zod, fast-xml-parser;
+- Vitest and Vue Test Utils;
+- Vite PWA.
+
+## License
+
 MIT © 2026 DataTree Team

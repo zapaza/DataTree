@@ -3,7 +3,7 @@
     <div class="p-4 border-b border-light flex items-center justify-between bg-secondary">
       <div class="flex items-center gap-2">
         <div class="i-carbon-settings text-blue-600 dark:text-blue-400 text-xl" />
-        <h2 class="font-bold text-base">Settings</h2>
+        <h2 class="font-bold text-base">{{ t('settings.title') }}</h2>
       </div>
       <button
         class="p-1 hover:bg-gray-200 dark:hover:bg-[#2d2d2d] rounded transition-colors text-light hover:text-muted"
@@ -18,10 +18,10 @@
       <section class="space-y-3">
         <h3 class="text-xs font-bold uppercase text-light tracking-wider flex items-center gap-2">
           <div class="i-carbon-color-palette" />
-          Appearance
+          {{ t('settings.appearance') }}
         </h3>
         <div class="flex items-center justify-between p-3 rounded-xl border border-light bg-secondary">
-          <span class="text-sm text-base font-medium">Dark Mode</span>
+          <span class="text-sm text-base font-medium">{{ t('settings.darkMode') }}</span>
           <button
             class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             :class="settingsStore.settings.theme === 'dark' ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'"
@@ -33,26 +33,41 @@
             />
           </button>
         </div>
+        <div class="p-3 rounded-xl border border-light bg-secondary space-y-2">
+          <label class="text-sm text-base font-medium" for="locale-select">{{ t('settings.language') }}</label>
+          <select
+            id="locale-select"
+            :value="locale"
+            class="w-full p-2 text-xs bg-base border border-base rounded-lg focus:ring-1 focus:ring-blue-500 outline-none text-base"
+            @change="setLocale(($event.target as HTMLSelectElement).value as TLocale)"
+          >
+            <option value="en">{{ t('locale.english') }}</option>
+            <option value="ru">{{ t('locale.russian') }}</option>
+          </select>
+          <p class="text-[10px] text-light leading-snug">
+            {{ t('settings.languageHint') }}
+          </p>
+        </div>
       </section>
 
       <!-- Privacy -->
       <section class="space-y-3">
         <h3 class="text-xs font-bold uppercase text-light tracking-wider flex items-center gap-2">
           <div class="i-carbon-security" />
-          Privacy
+          {{ t('settings.privacy') }}
         </h3>
         <div class="p-3 rounded-xl border border-light bg-secondary space-y-3">
           <div class="flex items-center justify-between gap-3">
             <div>
-              <span class="text-sm text-base font-medium">Anonymous Analytics</span>
+              <span class="text-sm text-base font-medium">{{ t('settings.anonymousAnalytics') }}</span>
               <p class="text-[10px] text-light leading-snug mt-1">
-                Off by default. Payload content is never sent.
+                {{ t('settings.analyticsHint') }}
               </p>
             </div>
             <button
               class="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               :class="settingsStore.settings.privacy.analyticsEnabled ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'"
-              :aria-label="settingsStore.settings.privacy.analyticsEnabled ? 'Disable anonymous analytics' : 'Enable anonymous analytics'"
+              :aria-label="settingsStore.settings.privacy.analyticsEnabled ? t('settings.disableAnalytics') : t('settings.enableAnalytics')"
               @click="settingsStore.updatePrivacySettings({ analyticsEnabled: !settingsStore.settings.privacy.analyticsEnabled })"
             >
               <span
@@ -68,11 +83,11 @@
       <section class="space-y-3">
         <h3 class="text-xs font-bold uppercase text-light tracking-wider flex items-center gap-2">
           <div class="i-carbon-code" />
-          Editor
+          {{ t('settings.editor') }}
         </h3>
         <div class="space-y-2">
           <div class="flex flex-col gap-1">
-            <label class="text-xs text-muted font-medium ml-1">Font Size: {{ settingsStore.settings.editor.fontSize }}px</label>
+            <label class="text-xs text-muted font-medium ml-1">{{ t('settings.fontSize', { size: settingsStore.settings.editor.fontSize }) }}</label>
             <input
               type="range"
               min="10"
@@ -83,26 +98,26 @@
           </div>
 
           <div class="flex items-center justify-between py-2 border-b border-light">
-            <span class="text-sm text-base">Line Numbers</span>
+            <span class="text-sm text-base">{{ t('settings.lineNumbers') }}</span>
             <input type="checkbox" v-model="settingsStore.settings.editor.showLineNumbers" class="rounded border-base text-blue-600 focus:ring-blue-500 bg-base" />
           </div>
 
           <div class="flex items-center justify-between py-2 border-b border-light">
-            <span class="text-sm text-base">Minimap</span>
+            <span class="text-sm text-base">{{ t('settings.minimap') }}</span>
             <input type="checkbox" v-model="settingsStore.settings.editor.minimap" class="rounded border-base text-blue-600 focus:ring-blue-500 bg-base" />
           </div>
 
           <div class="flex flex-col gap-1.5 pt-1">
-            <label class="text-xs text-muted font-medium ml-1">Render Whitespace</label>
+            <label class="text-xs text-muted font-medium ml-1">{{ t('settings.renderWhitespace') }}</label>
             <select
               v-model="settingsStore.settings.editor.renderWhitespace"
               class="w-full p-2 text-xs bg-secondary border border-base rounded-lg focus:ring-1 focus:ring-blue-500 outline-none text-base"
             >
-              <option value="none">None</option>
-              <option value="boundary">Boundary</option>
-              <option value="selection">Selection</option>
-              <option value="trailing">Trailing</option>
-              <option value="all">All</option>
+              <option value="none">{{ t('settings.whitespace.none') }}</option>
+              <option value="boundary">{{ t('settings.whitespace.boundary') }}</option>
+              <option value="selection">{{ t('settings.whitespace.selection') }}</option>
+              <option value="trailing">{{ t('settings.whitespace.trailing') }}</option>
+              <option value="all">{{ t('settings.whitespace.all') }}</option>
             </select>
           </div>
         </div>
@@ -112,21 +127,21 @@
       <section class="space-y-3">
         <h3 class="text-xs font-bold uppercase text-light tracking-wider flex items-center gap-2">
           <div class="i-carbon-tree-view" />
-          Tree Visualization
+          {{ t('settings.tree') }}
         </h3>
         <div class="space-y-2">
           <div class="flex items-center justify-between py-2 border-b border-light">
-            <span class="text-sm text-base">Show Icons</span>
+            <span class="text-sm text-base">{{ t('settings.showIcons') }}</span>
             <input type="checkbox" v-model="settingsStore.settings.tree.showIcons" class="rounded border-base text-blue-600 focus:ring-blue-500 bg-base" />
           </div>
 
           <div class="flex items-center justify-between py-2 border-b border-light">
-            <span class="text-sm text-base">Animations</span>
+            <span class="text-sm text-base">{{ t('settings.animations') }}</span>
             <input type="checkbox" v-model="settingsStore.settings.tree.animate" class="rounded border-base text-blue-600 focus:ring-blue-500 bg-base" />
           </div>
 
           <div class="flex flex-col gap-1">
-            <label class="text-xs text-muted font-medium ml-1">Indent Size: {{ settingsStore.settings.tree.indentSize }}px</label>
+            <label class="text-xs text-muted font-medium ml-1">{{ t('settings.indentSize', { size: settingsStore.settings.tree.indentSize }) }}</label>
             <input
               type="range"
               min="10"
@@ -143,11 +158,11 @@
       <section class="space-y-3 pt-4">
         <h3 class="text-xs font-bold uppercase text-light tracking-wider flex items-center gap-2">
           <div class="i-carbon-data-base" />
-          Diff Sessions
+          {{ t('settings.diffSessions') }}
         </h3>
 
         <div class="flex flex-col gap-1">
-          <label class="text-xs text-muted font-medium ml-1">Retention: {{ settingsStore.settings.diffPersistence?.retentionDays ?? 30 }} days</label>
+          <label class="text-xs text-muted font-medium ml-1">{{ t('settings.retention', { days: settingsStore.settings.diffPersistence?.retentionDays ?? 30 }) }}</label>
           <input
             type="range"
             min="1"
@@ -156,7 +171,7 @@
             class="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
           />
           <p class="text-[10px] text-light leading-snug mt-1">
-            Old diff sessions will be cleaned up automatically.
+            {{ t('settings.retentionHint') }}
           </p>
         </div>
 
@@ -166,14 +181,14 @@
             @click="handleExport"
           >
             <div class="i-carbon-export" />
-            Export
+            {{ t('common.export') }}
           </button>
           <button
             class="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-gray-100 dark:bg-[#2d2d2d] hover:bg-gray-200 dark:hover:bg-[#3d3d3d] text-base rounded-lg text-xs font-bold transition-colors shadow-sm"
             @click="triggerImport"
           >
             <div class="i-carbon-document-import" />
-            Import
+            {{ t('common.import') }}
           </button>
         </div>
         <input ref="fileInput" type="file" accept=".json" class="hidden" @change="handleImport" />
@@ -183,7 +198,7 @@
           @click="settingsStore.resetSettings"
         >
           <div class="i-carbon-reset" />
-          Reset to Default
+          {{ t('settings.resetDefault') }}
         </button>
       </section>
     </div>
@@ -201,10 +216,13 @@ import { ref } from 'vue';
 import { useSettingsStore } from '@/stores/settingsStore';
 import useClipboard from '@/composables/useClipboard';
 import { APP_DISPLAY_VERSION } from '@/config/app-meta';
+import useI18n from '@/composables/useI18n';
+import type { TLocale } from '@/types/store';
 
 defineEmits(['close']);
 const settingsStore = useSettingsStore();
 const { showToast } = useClipboard();
+const { locale, setLocale, t } = useI18n();
 const appDisplayVersion = APP_DISPLAY_VERSION;
 
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -218,7 +236,7 @@ const handleExport = () => {
   a.download = `datatree-settings-${new Date().toISOString().split('T')[0]}.json`;
   a.click();
   URL.revokeObjectURL(url);
-  showToast('Settings exported successfully', 'success');
+  showToast(t('toast.settingsExported'), 'success');
 };
 
 const triggerImport = () => {
@@ -233,9 +251,9 @@ const handleImport = (event: Event) => {
     reader.onload = (e) => {
       const content = e.target?.result as string;
       if (settingsStore.importSettings(content)) {
-        showToast('Settings imported successfully', 'success');
+        showToast(t('toast.settingsImported'), 'success');
       } else {
-        showToast('Failed to import settings. Invalid format.', 'error');
+        showToast(t('toast.settingsImportFailed'), 'error');
       }
     };
     reader.readAsText(file);

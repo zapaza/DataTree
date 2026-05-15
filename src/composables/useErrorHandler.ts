@@ -1,21 +1,21 @@
 import { computed } from 'vue';
-import { useAppStore } from '../stores/appStore';
+import { useDocumentStore } from '../stores/documentStore';
 import ErrorFormatter from '../utils/error-formatter';
 import type { TParseError } from '../types/store';
 
 export default function useErrorHandler() {
-  const appStore = useAppStore();
+  const documentStore = useDocumentStore();
 
   const enhancedErrors = computed<TParseError[]>(() => {
-    return appStore.errors.map(err =>
-      ErrorFormatter.enhance(err, appStore.rawInput, appStore.format)
+    return documentStore.errors.map(err =>
+      ErrorFormatter.enhance(err, documentStore.rawInput, documentStore.format)
     );
   });
 
   const applyFix = (error: TParseError) => {
     if (error.suggestion) {
       const fixedContent = error.suggestion.fix();
-      appStore.setRawInput(fixedContent);
+      documentStore.setRawInput(fixedContent);
     }
   };
 

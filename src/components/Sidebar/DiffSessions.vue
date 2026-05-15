@@ -3,16 +3,16 @@
     <div class="flex items-center justify-between">
       <h3 class="text-xs font-bold uppercase text-light tracking-wider flex items-center gap-2">
         <div class="i-carbon-save" />
-        Sessions
+        {{ t('compare.sessions.title') }}
       </h3>
 
       <div class="flex items-center gap-2">
         <div v-if="diffStore.isSaving" class="text-[10px] text-muted font-bold uppercase flex items-center gap-1">
           <div class="i-carbon-circle-dash animate-spin" />
-          Saving…
+          {{ t('compare.sessions.saving') }}
         </div>
         <div v-else-if="diffStore.lastSavedAt" class="text-[10px] text-light font-mono">
-          Saved
+          {{ t('compare.sessions.saved') }}
         </div>
       </div>
     </div>
@@ -23,27 +23,27 @@
         @click="handleSaveAsNew"
       >
         <div class="i-carbon-add" />
-        Save as new
+        {{ t('compare.sessions.saveAsNew') }}
       </button>
       <button
         class="flex-1 flex items-center justify-center gap-2 py-2 px-3 bg-base border border-base hover:bg-secondary text-muted rounded-lg text-[10px] font-bold uppercase transition-all shadow-sm"
         @click="triggerImport"
       >
         <div class="i-carbon-document-import" />
-        Import
+        {{ t('common.import') }}
       </button>
       <input ref="importInput" type="file" accept=".json" class="hidden" @change="handleImport" />
     </div>
 
     <div v-if="isLoading" class="py-6 text-center text-light">
       <div class="i-carbon-progress-bar-round animate-spin text-2xl mb-2" />
-      <p class="text-xs">Loading sessions…</p>
+      <p class="text-xs">{{ t('compare.sessions.loading') }}</p>
     </div>
 
     <div v-else-if="sessions.length === 0" class="py-6 text-center text-light">
       <div class="i-carbon-time text-3xl mb-2 opacity-20" />
-      <p class="text-xs italic">No saved sessions yet</p>
-      <p class="text-[10px] mt-2">Diff sessions are autosaved while you work.</p>
+      <p class="text-xs italic">{{ t('compare.sessions.none') }}</p>
+      <p class="text-[10px] mt-2">{{ t('compare.sessions.hint') }}</p>
     </div>
 
     <div v-else class="space-y-2">
@@ -69,21 +69,21 @@
           <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               class="p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] text-muted"
-              title="Export"
+              :title="t('common.export')"
               @click.stop="exportSession(s.id)"
             >
               <div class="i-carbon-download text-sm" />
             </button>
             <button
               class="p-1 rounded hover:bg-gray-200 dark:hover:bg-[#2d2d2d] text-muted"
-              title="Rename"
+              :title="t('common.rename')"
               @click.stop="renameSession(s.id, s.title)"
             >
               <div class="i-carbon-edit text-sm" />
             </button>
             <button
               class="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/10 text-light hover:text-red-600"
-              title="Delete"
+              :title="t('common.delete')"
               @click.stop="deleteSession(s.id)"
             >
               <div class="i-carbon-trash-can text-sm" />
@@ -100,9 +100,11 @@ import { onMounted, ref } from 'vue'
 import { useDiffStore } from '@/stores/diffStore'
 import useClipboard from '@/composables/useClipboard'
 import { diffSessionsDB, type TDiffSession } from '@/utils/indexeddb/diff-sessions-db'
+import useI18n from '@/composables/useI18n'
 
 const diffStore = useDiffStore()
 const { showToast } = useClipboard()
+const { locale, t } = useI18n()
 
 const isLoading = ref(false)
 const sessions = ref<TDiffSession[]>([])
@@ -122,7 +124,7 @@ onMounted(() => {
 })
 
 const formatDate = (ts: number) => {
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(locale.value === 'ru' ? 'ru-RU' : 'en-US', {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
@@ -144,32 +146,32 @@ const formatBytes = (bytes: number) => {
 
 const loadSession = async (id: string) => {
   await diffStore.restoreSession(id)
-  showToast('Session loaded', 'success')
+  showToast(t('toast.sessionLoaded'), 'success')
   await refresh()
 }
 
 const handleSaveAsNew = async () => {
   await diffStore.saveSessionNow({ forceNew: true, title: `Diff Session ${new Date().toISOString().slice(0, 16).replace('T', ' ')}` })
-  showToast('Session saved', 'success')
+  showToast(t('toast.sessionSaved'), 'success')
   await refresh()
 }
 
 const deleteSession = async (id: string) => {
-  if (!confirm('Delete this session?')) return
+  if (!confirm(t('compare.sessions.deleteConfirm'))) return
   await diffSessionsDB.deleteSession(id)
-  showToast('Session deleted', 'info')
+  showToast(t('toast.sessionDeleted'), 'info')
   await refresh()
 }
 
 const renameSession = async (id: string, currentTitle: string) => {
-  const title = prompt('Session title', currentTitle)?.trim()
+  const title = prompt(t('compare.sessions.titlePrompt'), currentTitle)?.trim()
   if (!title) return
   const session = await diffSessionsDB.getSession(id)
   if (!session) return
   session.title = title
   session.updatedAt = Date.now()
   await diffSessionsDB.upsertSession(session)
-  showToast('Session renamed', 'success')
+  showToast(t('toast.sessionRenamed'), 'success')
   await refresh()
 }
 
@@ -183,7 +185,7 @@ const exportSession = async (id: string) => {
   a.download = `datatree-diff-session-${new Date().toISOString().split('T')[0]}.json`
   a.click()
   URL.revokeObjectURL(url)
-  showToast('Session exported', 'success')
+  showToast(t('toast.sessionExported'), 'success')
 }
 
 const triggerImport = () => importInput.value?.click()
@@ -197,7 +199,7 @@ const handleImport = async (event: Event) => {
     const text = await file.text()
     const parsed = JSON.parse(text)
     if (parsed?.type !== 'diff-session' || !parsed?.session) {
-      showToast('Invalid session file', 'error')
+      showToast(t('toast.invalidSession'), 'error')
       return
     }
     const session = parsed.session as TDiffSession
@@ -206,13 +208,12 @@ const handleImport = async (event: Event) => {
     session.createdAt = Date.now()
     session.updatedAt = Date.now()
     await diffSessionsDB.upsertSession(session)
-    showToast('Session imported', 'success')
+    showToast(t('toast.sessionImported'), 'success')
     await refresh()
   } catch {
-    showToast('Failed to import session', 'error')
+    showToast(t('toast.sessionImportFailed'), 'error')
   } finally {
     input.value = ''
   }
 }
 </script>
-

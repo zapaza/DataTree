@@ -1,0 +1,200 @@
+Ниже роадмап так, как я бы вел проект: сначала убираем недоверие и технический шум, потом добавляем режимы, которые делают DataTree быстрее и полезнее ИИ для работы с payload’ами.
+
+**North Star**
+DataTree: **Local API Payload Inspector**
+Обещание продукта: “Вставил приватный JSON/XML, мгновенно понял структуру, риски, контракт, diff и трансформации. Ничего не уходит наружу.”
+
+**Фаза 0: Техническая Гигиена**
+Цель: проект должен честно соответствовать идее local/private/offline.
+
+Задачи:
+1. Убрать внешние runtime-зависимости.
+   - Перевести Monaco с CDN на локальный bundle в [useMonaco.ts](/Users/stanislavcumakov/Sites/myself/JSON-XML%20Visualizer/src/composables/useMonaco.ts).
+   - Убрать Google Fonts fetch из [uno.config.ts](/Users/stanislavcumakov/Sites/myself/JSON-XML%20Visualizer/uno.config.ts) или заменить локальными/system fonts.
+   - Проверить PWA offline после первого запуска.
+
+2. Приватность.
+   - Сделать analytics opt-in.
+   - Отключить/убрать `webvisor` и `clickmap` из [index.html](/Users/stanislavcumakov/Sites/myself/JSON-XML%20Visualizer/index.html).
+   - Добавить видимый privacy badge: “Local only”.
+   - Добавить privacy section в README.
+
+3. Починить мелкие несостыковки.
+   - Синхронизировать версии: [package.json](/Users/stanislavcumakov/Sites/myself/JSON-XML%20Visualizer/package.json), README, Settings footer, header.
+   - Заменить `alfa` на `alpha` или убрать.
+   - Починить `lint` script.
+   - Заменить неподключенную иконку `i-ph-chart-line-duotone`.
+   - Причесать OG/Twitter ссылки на актуальный домен.
+
+4. Типизация и lint.
+   - Ввести `JsonValue`, `JsonObject`, `JsonArray`.
+   - Заменить критичные `any`.
+   - Для мест, где `any` оправдан, осознанно настроить ESLint.
+   - Добавить CI шаги: type-check, unit tests, build, lint.
+
+Критерий готовности: `npm run build`, `npm run test:unit -- --run`, lint без случайного шума, приложение работает без CDN.
+
+**Фаза 1: Новый Каркас Продукта**
+Цель: DataTree перестает быть “редактор + diff” и становится inspector с режимами.
+
+Задачи:
+1. Перестроить навигацию:
+   - `Inspect`
+   - `Validate`
+   - `Compare`
+   - `Transform`
+
+2. Обновить header/sidebar.
+   - Название: `DataTree`.
+   - Subtitle: `Local API Payload Inspector`.
+   - Ясный статус: `Local`, `Offline ready`, `No upload`.
+
+3. Унифицировать состояние документа.
+   - Один общий `documentStore`: raw input, format, parsed tree, stats, errors.
+   - Diff/Compare использует тот же parsing pipeline.
+   - History хранит тип операции и режим.
+
+Критерий готовности: режимы есть в UI, текущий функционал не потерян.
+
+**Фаза 2: Inspect**
+Цель: лучший режим для быстрого понимания payload’а.
+
+Задачи:
+1. Улучшить дерево.
+   - Корректный copy value для object/array через восстановление поддерева.
+   - Корректный JS path / JSONPath для ключей с пробелами, точками и спецсимволами.
+   - Copy node as JSON.
+   - Copy subtree.
+   - Expand to depth: 1, 2, 3, all.
+
+2. Smart Insights.
+   - Подозрительные поля: `token`, `secret`, `password`, `authorization`.
+   - Nullable fields.
+   - Empty arrays/objects.
+   - Mixed-type arrays.
+   - Duplicate ids.
+   - Deepest paths.
+   - Largest branches.
+   - Date-like fields и разные date formats.
+
+3. Query/Extract.
+   - JSONPath search.
+   - XPath для XML.
+   - Таблица результатов.
+   - Copy results as JSON/CSV.
+   - “Pin query” в историю.
+
+Критерий готовности: пользователь может за 10 секунд понять структуру, риски и вытащить нужные значения без чата с ИИ.
+
+**Фаза 3: Validate**
+Цель: DataTree становится инструментом для API contracts.
+
+Задачи:
+1. Schema generation.
+   - Generate JSON Schema from payload.
+   - Generate TypeScript interfaces.
+   - Generate Zod schema.
+   - Copy/download generated schema.
+
+2. Validation.
+   - Подключить полноценную JSON Schema validation, вероятно через `ajv`.
+   - Отображать ошибки в дереве и редакторе.
+   - Jump to invalid field.
+   - Severity: error/warning/info.
+
+3. Contract checks.
+   - Required vs optional fields.
+   - Nullable detection.
+   - Array item shape analysis.
+   - Enum candidate detection.
+   - Format hints: email, uuid, url, date-time.
+
+Критерий готовности: можно вставить API response и получить schema/types + понять, насколько другой payload ей соответствует.
+
+**Фаза 4: Compare**
+Цель: diff должен стать semantic diff, а не просто structural diff.
+
+Задачи:
+1. Diff options UI.
+   - Ignore keys.
+   - Ignore array order.
+   - Compare arrays by key: `id`, `uuid`, `name`.
+   - Ignore type-only differences: `"1"` vs `1`.
+   - Normalize dates.
+   - Ignore volatile fields: `timestamp`, `updatedAt`, `requestId`.
+
+2. Better reports.
+   - Breaking/non-breaking classification.
+   - Summary grouped by path.
+   - HTML report with filters.
+   - JSON Patch improvements for arrays.
+   - Copy change path/value.
+
+3. Contract diff.
+   - Compare generated schemas.
+   - Removed required field = breaking.
+   - Type changed = breaking.
+   - Added optional field = non-breaking.
+   - Nullable changed = warning/breaking depending direction.
+
+Критерий готовности: Compare отвечает не только “что изменилось”, но и “сломает ли это интеграцию”.
+
+**Фаза 5: Transform**
+Цель: быстрые практические преобразования данных.
+
+Задачи:
+1. Форматы.
+   - JSON ↔ XML улучшить настройками атрибутов/text nodes.
+   - JSON → CSV/table flatten.
+   - CSV/table preview.
+   - Minify/format/sort уже есть, довести до общего Transform режима.
+
+2. Redaction.
+   - Mask secrets by common key names.
+   - Custom redact rules.
+   - Preview before apply.
+   - Export sanitized payload.
+
+3. Code generation.
+   - TypeScript types.
+   - Zod schema.
+   - JSON Schema.
+   - Example fetch/axios response type snippet.
+
+Критерий готовности: разработчик может подготовить payload для тикета, документации, теста или PR без ручной возни.
+
+**Фаза 6: Полировка И Запуск**
+Цель: продукт выглядит свежо и надежно.
+
+Задачи:
+1. UX.
+   - Command palette: `Cmd/Ctrl + K`.
+   - Keyboard shortcuts.
+   - Empty states под реальные developer workflows.
+   - Better mobile layout.
+   - Быстрый onboarding через примеры: REST response, error payload, OpenAPI-like payload, XML config.
+
+2. Документация.
+   - README под новый positioning.
+   - Screenshots/GIFs.
+   - Privacy promise.
+   - “Why not just AI?” section.
+
+3. Quality gates.
+   - Unit tests для schema/type generation.
+   - Performance tests для insights/query.
+   - E2E smoke на основные режимы.
+   - Lighthouse/PWA check.
+
+**Приоритет На 2-3 Недели**
+Я бы шел так:
+
+1. Offline/private cleanup.
+2. Версии, lint script, иконки, README/domain consistency.
+3. Новый navigation shell: Inspect / Validate / Compare / Transform.
+4. Inspect Smart Insights MVP.
+5. Query/Extract MVP.
+6. Generate TypeScript/Zod/JSON Schema.
+7. Semantic diff options.
+
+Самая сильная первая публичная версия: **Inspect + Smart Insights + Query + Generate Types**, полностью local/offline. Это уже будет ощущаться как инструмент из эпохи ИИ, но с преимуществом: быстрее, приватнее и предсказуемее.

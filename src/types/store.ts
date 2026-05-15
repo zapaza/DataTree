@@ -1,5 +1,7 @@
 import type { JsonValue } from '@/types/json';
 
+export type TLocale = 'en' | 'ru';
+
 export type TTreeNodeType = 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null';
 
 export interface TTreeNode {
@@ -25,6 +27,7 @@ export interface TParseError {
 
 export interface TAppSettings {
   theme: 'light' | 'dark';
+  locale: TLocale;
   editor: {
     fontSize: number;
     fontFamily: string;

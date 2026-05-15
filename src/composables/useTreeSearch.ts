@@ -1,21 +1,21 @@
 import { ref, watch, onUnmounted, computed } from 'vue';
-import { useAppStore } from '../stores/appStore';
+import { useDocumentStore } from '../stores/documentStore';
 import { useTreeStore } from '../stores/treeStore';
 import { SearchIndex } from '../utils/search-index';
 
 export function useTreeSearch() {
-  const appStore = useAppStore();
+  const documentStore = useDocumentStore();
   const treeStore = useTreeStore();
   const searchQuery = ref('');
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   const performSearch = () => {
-    if (!searchQuery.value.trim() || !appStore.parsedData) {
+    if (!searchQuery.value.trim() || !documentStore.parsedData) {
       treeStore.setSearchResults('', []);
       return;
     }
 
-    const results = SearchIndex.search(appStore.parsedData, searchQuery.value);
+    const results = SearchIndex.search(documentStore.parsedData, searchQuery.value);
     const paths = results.map(r => r.path);
     treeStore.setSearchResults(searchQuery.value, paths);
 
@@ -44,7 +44,7 @@ export function useTreeSearch() {
   };
 
   // Следим за изменением поискового запроса и данных с дебаунсом
-  watch([searchQuery, () => appStore.parsedData], () => {
+  watch([searchQuery, () => documentStore.parsedData], () => {
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       performSearch();

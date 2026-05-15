@@ -26,6 +26,15 @@ describe('XmlParser', () => {
     expect(result.success).toBe(true);
     expect(result.data.node['@_attr']).toBe('val');
   });
+
+  it('should keep XML entities unexpanded', () => {
+    const xml = '<!DOCTYPE root [<!ENTITY sample "SECRET">]><root>&sample;</root>';
+    const result = XmlParser.parse(xml);
+
+    expect(result.success).toBe(true);
+    expect(result.data.root).toBe('&sample;');
+    expect(result.data.root).not.toBe('SECRET');
+  });
 });
 
 describe('XmlToJsonConverter', () => {

@@ -11,25 +11,25 @@
     </div>
 
     <!-- Если данные есть и не парсим -->
-    <div v-if="hasData && !appStore.isParsing" ref="treeContainer" class="flex-1 overflow-auto p-4 custom-scrollbar outline-none dark:bg-[#1e1e1e]" tabindex="0">
+    <div v-if="hasData && !documentStore.isParsing" ref="treeContainer" class="flex-1 overflow-auto p-4 custom-scrollbar outline-none dark:bg-[#1e1e1e]" tabindex="0">
       <TreeNode :node="parsedData!" path="root" :depth="0" />
     </div>
 
     <!-- Индикатор загрузки при парсинге -->
-    <div v-else-if="appStore.isParsing" class="flex-1 flex flex-col items-center justify-center bg-secondary">
+    <div v-else-if="documentStore.isParsing" class="flex-1 flex flex-col items-center justify-center bg-secondary">
       <div class="i-carbon-progress-bar-round animate-spin text-4xl text-blue-500 mb-4" />
-      <p class="text-sm font-medium text-muted">Parsing large structure...</p>
-      <p class="text-[10px] text-light mt-1">This might take a few seconds</p>
+      <p class="text-sm font-medium text-muted">{{ t('tree.parsingLarge') }}</p>
+      <p class="text-[10px] text-light mt-1">{{ t('tree.parsingLargeHint') }}</p>
     </div>
 
     <!-- Пустое состояние или ошибка -->
     <div v-else class="flex-1 flex flex-col items-center justify-center text-light p-8 text-center bg-secondary">
       <div class="i-carbon-tree-view text-5xl mb-4 opacity-20" />
-      <p v-if="appStore.rawInput.trim()" class="text-sm italic">
-        Invalid {{ appStore.format.toUpperCase() }} data to visualize.
+      <p v-if="documentStore.rawInput.trim()" class="text-sm italic">
+        {{ t('tree.invalidData') }}
       </p>
       <p v-else class="text-sm italic">
-        Enter some {{ appStore.format.toUpperCase() }} in the editor to see the tree structure.
+        {{ t('tree.enterData', { format: documentStore.format.toUpperCase() }) }}
       </p>
     </div>
   </div>
@@ -37,22 +37,24 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { useAppStore } from '@/stores/appStore';
+import { useDocumentStore } from '@/stores/documentStore';
 import { useTreeStore } from '@/stores/treeStore';
 import { useTreeNavigation } from '@/composables/useTreeNavigation';
 import TreeNode from './TreeNode.vue';
 import TreeSearch from './TreeSearch.vue';
 import TreeFilters from './TreeFilters.vue';
 import type { TTreeNode } from '@/types/store';
+import useI18n from '@/composables/useI18n';
 
-const appStore = useAppStore();
+const documentStore = useDocumentStore();
 const treeStore = useTreeStore();
+const { t } = useI18n();
 const treeContainer = ref<HTMLElement | null>(null);
 
 // Инициализируем навигацию с клавиатуры
 useTreeNavigation(treeContainer);
 
-const parsedData = computed(() => appStore.filteredData);
+const parsedData = computed(() => documentStore.filteredData);
 const hasData = computed(() => !!parsedData.value);
 
 const getAllPaths = (node: TTreeNode, currentPath: string = 'root', paths: string[] = []): string[] => {

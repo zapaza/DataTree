@@ -1,22 +1,27 @@
 import { onMounted, onUnmounted } from 'vue';
-import { useAppStore } from '../stores/appStore';
+import { useRoute } from 'vue-router';
+import { useDocumentStore } from '../stores/documentStore';
 import { useOperationsHistoryStore } from '../stores/operationsHistoryStore';
+import { getProductModeByPath } from '@/config/product-modes';
 
 export default function useHistory() {
-  const appStore = useAppStore();
+  const documentStore = useDocumentStore();
   const historyStore = useOperationsHistoryStore();
+  const route = useRoute();
 
   let autoSaveTimer: number | null = null;
   const AUTOSAVE_INTERVAL = 30000; // 30 секунд
 
   const saveCurrentState = async () => {
-    if (!appStore.rawInput.trim()) return;
+    if (!documentStore.rawInput.trim()) return;
 
     await historyStore.addItem({
-      content: appStore.rawInput,
-      format: appStore.format,
-      isValid: appStore.isValid,
-      nodesCount: appStore.statistics.nodes
+      content: documentStore.rawInput,
+      format: documentStore.format,
+      isValid: documentStore.isValid,
+      nodesCount: documentStore.statistics.nodes,
+      mode: getProductModeByPath(route.path).id,
+      operationType: 'autosave'
     });
   };
 

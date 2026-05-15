@@ -10,10 +10,10 @@
       </div>
       <div>
         <h4 class="text-sm font-bold text-base">
-          {{ offlineReady ? 'App Ready Offline' : 'New Content Available' }}
+          {{ offlineReady ? t('pwa.ready') : t('pwa.update') }}
         </h4>
         <p class="text-xs text-muted mt-1">
-          {{ offlineReady ? 'You can now use DataTree even without internet connection.' : 'A new version of DataTree is available. Reload to update.' }}
+          {{ offlineReady ? t('pwa.readyDescription') : t('pwa.updateDescription') }}
         </p>
       </div>
     </div>
@@ -23,14 +23,14 @@
         class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted hover:text-base transition-colors"
         @click="close"
       >
-        Close
+        {{ t('common.close') }}
       </button>
       <button
         v-if="needRefresh"
         class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all shadow-sm shadow-blue-200 dark:shadow-none"
         @click="updateServiceWorker()"
       >
-        Reload & Update
+        {{ t('common.reloadUpdate') }}
       </button>
     </div>
   </div>
@@ -38,6 +38,9 @@
 
 <script setup lang="ts">
 import { useRegisterSW } from 'virtual:pwa-register/vue'
+import useI18n from '@/composables/useI18n'
+
+const { t } = useI18n()
 
 const {
   offlineReady,

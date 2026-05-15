@@ -15,9 +15,9 @@
 
     <!-- Diff Type Icon -->
     <div class="mr-2 flex items-center">
-      <div v-if="node.diffType === 'added'" class="i-carbon-add-alt text-green-500 text-sm" title="Added" />
-      <div v-else-if="node.diffType === 'removed'" class="i-carbon-subtract-alt text-red-500 text-sm" title="Removed" />
-      <div v-else-if="node.diffType === 'modified'" class="i-carbon-renew text-amber-500 text-sm" title="Modified" />
+      <div v-if="node.diffType === 'added'" class="i-carbon-add-alt text-green-500 text-sm" :title="t('compare.added')" />
+      <div v-else-if="node.diffType === 'removed'" class="i-carbon-subtract-alt text-red-500 text-sm" :title="t('compare.removed')" />
+      <div v-else-if="node.diffType === 'modified'" class="i-carbon-renew text-amber-500 text-sm" :title="t('compare.modified')" />
       <div v-else class="i-carbon-dot-mark text-gray-300 dark:text-gray-600 text-[10px]" />
     </div>
 
@@ -58,6 +58,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from '@/composables/useI18n';
 import type { TDiffTreeNode } from '@/types/diff';
 import type { JsonValue } from '@/types/json';
 
@@ -69,6 +70,7 @@ const props = defineProps<{
 
 defineEmits(['toggle-expand']);
 
+const { t } = useI18n();
 const hasChildren = computed(() => props.node.children && props.node.children.length > 0);
 
 /**

@@ -1,224 +1,354 @@
-import type { TDiffResult, TDiffOptions, TDiffNode, TJsonPatchOperation } from '@/types/diff';
+import type {
+  TDiffNode,
+  TDiffOptions,
+  TDiffPathSummary,
+  TDiffResult,
+  TJsonPatchOperation,
+} from '@/types/diff';
 import type { JsonArray, JsonObject, JsonValue } from '@/types/json';
 import { isJsonObject } from '@/types/json';
 import LCS from './lcs';
+import {
+  classifyDiffChange,
+  emptyRiskSummary,
+  escapeJsonPointerSegment,
+  getArrayItemKey,
+  getDiffValueType,
+  resolveArrayCompareKey,
+  shouldIgnoreKey,
+  valuesEquivalent,
+} from './semantic-utils';
+
+type TMutableStats = TDiffResult['stats'];
+
+const childPath = (path: string, key: string | number): string => {
+  return `${path}/${escapeJsonPointerSegment(String(key))}`;
+};
+
+const childDisplayPath = (path: string, key: string | number): string => {
+  return `${path}/${String(key)}`;
+};
+
+const parentDisplayPath = (path: string): string => {
+  if (!path || path === '/') return '/';
+  const clean = path.endsWith('/') ? path.slice(0, -1) : path;
+  const lastSlash = clean.lastIndexOf('/');
+  if (lastSlash <= 0) return '/';
+  return clean.slice(0, lastSlash);
+};
+
+const buildRiskSummary = (changes: TDiffNode[]) => {
+  const summary = emptyRiskSummary();
+  changes.filter(change => change.type !== 'unchanged').forEach((change) => {
+    const risk = change.risk ?? 'neutral';
+    if (risk === 'non-breaking') summary.nonBreaking++;
+    else if (risk === 'warning') summary.warnings++;
+    else summary[risk]++;
+  });
+  return summary;
+};
+
+const buildPathSummary = (changes: TDiffNode[]): TDiffPathSummary[] => {
+  const groups = new Map<string, TDiffPathSummary>();
+
+  changes.filter(change => change.type !== 'unchanged').forEach((change) => {
+    const displayPath = parentDisplayPath(change.displayPath ?? change.path);
+    const key = displayPath;
+    const group = groups.get(key) ?? {
+      path: parentDisplayPath(change.path),
+      displayPath,
+      total: 0,
+      added: 0,
+      removed: 0,
+      modified: 0,
+      breaking: 0,
+      nonBreaking: 0,
+      warnings: 0,
+    };
+
+    group.total++;
+    if (change.type === 'added') group.added++;
+    if (change.type === 'removed') group.removed++;
+    if (change.type === 'modified') group.modified++;
+    if (change.risk === 'breaking') group.breaking++;
+    if (change.risk === 'non-breaking') group.nonBreaking++;
+    if (change.risk === 'warning') group.warnings++;
+
+    groups.set(key, group);
+  });
+
+  return [...groups.values()].sort((a, b) => b.total - a.total || a.displayPath.localeCompare(b.displayPath));
+};
+
+const pathGroupsToSummary = (groups: Map<string, TDiffPathSummary>): TDiffPathSummary[] => {
+  return [...groups.values()].sort((a, b) => b.total - a.total || a.displayPath.localeCompare(b.displayPath));
+};
 
 /**
- * Основная функция для сравнения двух JSON структур.
+ * Compares two JSON-compatible structures and classifies changes by integration risk.
  */
 export function diffJson(left: JsonValue, right: JsonValue, options: TDiffOptions = {}): TDiffResult {
-  const { arrayOrderMatters = true, ignoreTypeDiff = false } = options;
+  const { arrayOrderMatters = true } = options;
+  const includeUnchanged = options.includeUnchanged ?? true;
+  const maxDetailedChanges = options.maxDetailedChanges ?? Number.POSITIVE_INFINITY;
+  const maxPatchOperations = options.maxPatchOperations ?? Number.POSITIVE_INFINITY;
   const changes: TDiffNode[] = [];
   const patch: TJsonPatchOperation[] = [];
-  const stats = {
+  const stats: TMutableStats = {
     added: 0,
     removed: 0,
     modified: 0,
     unchanged: 0,
   };
+  const riskSummary = emptyRiskSummary();
+  const pathGroups = new Map<string, TDiffPathSummary>();
 
-  /**
-   * Рекурсивное сравнение значений.
-   */
-  function compare(a: JsonValue, b: JsonValue, path: string) {
-    // Проверка на идентичность
-    if (isEqual(a, b, ignoreTypeDiff)) {
-      stats.unchanged++;
-      changes.push({ type: 'unchanged', path });
-      return;
-    }
+  const updatePathGroup = (change: TDiffNode) => {
+    if (change.type === 'unchanged') return;
 
-    // Если типы разные или один из них не объект/массив
-    if (typeof a !== typeof b || a === null || b === null || Array.isArray(a) !== Array.isArray(b)) {
-      stats.modified++;
-      changes.push({ type: 'modified', path, oldValue: a, newValue: b });
-      patch.push({ op: 'replace', path, value: b });
-      return;
-    }
+    const displayPath = parentDisplayPath(change.displayPath ?? change.path);
+    const key = displayPath;
+    const group = pathGroups.get(key) ?? {
+      path: parentDisplayPath(change.path),
+      displayPath,
+      total: 0,
+      added: 0,
+      removed: 0,
+      modified: 0,
+      breaking: 0,
+      nonBreaking: 0,
+      warnings: 0,
+    };
 
-    // Сравнение массивов
-    if (Array.isArray(a) && Array.isArray(b)) {
-      if (arrayOrderMatters) {
-        compareArraysOrdered(a, b, path);
-      } else {
-        compareArraysUnordered(a, b, path);
+    group.total++;
+    if (change.type === 'added') group.added++;
+    if (change.type === 'removed') group.removed++;
+    if (change.type === 'modified') group.modified++;
+    if (change.risk === 'breaking') group.breaking++;
+    if (change.risk === 'non-breaking') group.nonBreaking++;
+    if (change.risk === 'warning') group.warnings++;
+
+    pathGroups.set(key, group);
+  };
+
+  const pushChange = (
+    type: TDiffNode['type'],
+    path: string,
+    oldValue?: JsonValue,
+    newValue?: JsonValue,
+    displayPath = path
+  ) => {
+    stats[type]++;
+    if (type === 'unchanged') {
+      if (includeUnchanged && changes.length < maxDetailedChanges) {
+        changes.push({ type, path, displayPath });
       }
       return;
     }
 
-    // Сравнение объектов
-    if (isJsonObject(a) && isJsonObject(b)) {
-      compareObjects(a, b, path);
-      return;
+    const classification = classifyDiffChange(type, oldValue, newValue);
+    const change: TDiffNode = {
+      type,
+      path,
+      displayPath,
+      oldValue,
+      newValue,
+      risk: classification.risk,
+      reason: classification.reason,
+      category: type === 'modified' && getDiffValueType(oldValue) !== getDiffValueType(newValue) ? 'type' : type === 'modified' ? 'value' : 'shape',
+      oldType: getDiffValueType(oldValue),
+      newType: getDiffValueType(newValue),
+    };
+
+    if (classification.risk === 'non-breaking') riskSummary.nonBreaking++;
+    else if (classification.risk === 'warning') riskSummary.warnings++;
+    else riskSummary[classification.risk]++;
+    updatePathGroup(change);
+
+    if (changes.length < maxDetailedChanges) {
+      changes.push(change);
     }
+  };
 
-    // Примитивы (уже проверены isEqual в начале, но для надежности)
-    stats.modified++;
-    changes.push({ type: 'modified', path, oldValue: a, newValue: b });
-    patch.push({ op: 'replace', path, value: b });
-  }
+  const addPatch = (operation: TJsonPatchOperation) => {
+    if (patch.length >= maxPatchOperations) return;
+    patch.push(operation);
+  };
 
-  /**
-   * Сравнение объектов по ключам.
-   */
-  function compareObjects(a: JsonObject, b: JsonObject, path: string) {
-    const keysA = Object.keys(a);
-    const keysB = Object.keys(b);
-    const allKeys = new Set([...keysA, ...keysB]);
-
-    allKeys.forEach(key => {
-      const currentPath = path === '' ? `/${key}` : `${path}/${key}`;
-
-      if (!(key in b)) {
-        stats.removed++;
-        changes.push({ type: 'removed', path: currentPath, oldValue: a[key] });
-        patch.push({ op: 'remove', path: currentPath });
-      } else if (!(key in a)) {
-        stats.added++;
-        changes.push({ type: 'added', path: currentPath, newValue: b[key]! });
-        patch.push({ op: 'add', path: currentPath, value: b[key]! });
-      } else {
-        compare(a[key]!, b[key]!, currentPath);
-      }
-    });
-  }
-
-  /**
-   * Сравнение массивов с учетом порядка (LCS).
-   */
-  function compareArraysOrdered(a: JsonArray, b: JsonArray, path: string) {
-    // Оптимизация: если массивы идентичны, пропускаем LCS
-    if (a.length === b.length) {
-      let identical = true;
-      for (let i = 0; i < a.length; i++) {
-        if (!isEqual(a[i]!, b[i]!, ignoreTypeDiff)) {
-          identical = false;
-          break;
-        }
-      }
-      if (identical) {
-        for (let i = 0; i < a.length; i++) {
-          stats.unchanged++;
-          changes.push({ type: 'unchanged', path: `${path}/${i}` });
-        }
+  const compare = (a: JsonValue, b: JsonValue, path: string, displayPath = path) => {
+    if (valuesEquivalent(a, b, options)) {
+      if (Array.isArray(a) && Array.isArray(b)) {
+        compareArrays(a, b, path, displayPath);
         return;
       }
+      if (isJsonObject(a) && isJsonObject(b)) {
+        compareObjects(a, b, path, displayPath);
+        return;
+      }
+      pushChange('unchanged', path, undefined, undefined, displayPath);
+      return;
     }
 
-    const lcsResult = LCS.diff(a, b, (x, y) => isEqual(x, y, ignoreTypeDiff));
+    if (typeof a !== typeof b || a === null || b === null || Array.isArray(a) !== Array.isArray(b)) {
+      pushChange('modified', path, a, b, displayPath);
+      addPatch({ op: 'replace', path, value: b });
+      return;
+    }
 
-    // В упрощенном виде для TDiffNode и JSON Patch:
-    // JSON Patch для массивов сложнее, так как индексы смещаются.
-    // Для простоты мы будем использовать базовые операции,
-    // но в реальном приложении может потребоваться более сложная логика индексов.
+    if (Array.isArray(a) && Array.isArray(b)) {
+      compareArrays(a, b, path, displayPath);
+      return;
+    }
 
+    if (isJsonObject(a) && isJsonObject(b)) {
+      compareObjects(a, b, path, displayPath);
+      return;
+    }
+
+    pushChange('modified', path, a, b, displayPath);
+    addPatch({ op: 'replace', path, value: b });
+  };
+
+  const compareObjects = (a: JsonObject, b: JsonObject, path: string, displayPath: string) => {
+    const keysA = Object.keys(a).filter(key => !shouldIgnoreKey(key, options));
+    const keysB = Object.keys(b).filter(key => !shouldIgnoreKey(key, options));
+    const allKeys = new Set([...keysA, ...keysB]);
+
+    allKeys.forEach((key) => {
+      const currentPath = childPath(path, key);
+      const currentDisplayPath = childDisplayPath(displayPath, key);
+
+      if (!Object.prototype.hasOwnProperty.call(b, key)) {
+        pushChange('removed', currentPath, a[key], undefined, currentDisplayPath);
+        addPatch({ op: 'remove', path: currentPath });
+      } else if (!Object.prototype.hasOwnProperty.call(a, key)) {
+        pushChange('added', currentPath, undefined, b[key]!, currentDisplayPath);
+        addPatch({ op: 'add', path: currentPath, value: b[key]! });
+      } else {
+        compare(a[key]!, b[key]!, currentPath, currentDisplayPath);
+      }
+    });
+  };
+
+  const compareArrays = (a: JsonArray, b: JsonArray, path: string, displayPath: string) => {
+    const key = resolveArrayCompareKey(a, b, options.compareArrayByKey);
+    if (key) {
+      compareArraysByKey(a, b, path, displayPath, key);
+      return;
+    }
+
+    if (arrayOrderMatters) {
+      compareArraysOrdered(a, b, path, displayPath);
+    } else {
+      compareArraysUnordered(a, b, path, displayPath);
+    }
+  };
+
+  const compareArraysOrdered = (a: JsonArray, b: JsonArray, path: string, displayPath: string) => {
+    if (a.length === b.length) {
+      a.forEach((item, index) => {
+        compare(item, b[index]!, childPath(path, index), childDisplayPath(displayPath, index));
+      });
+      return;
+    }
+
+    const lcsResult = LCS.diff(a, b, (x, y) => valuesEquivalent(x, y, options));
     let offset = 0;
+
     lcsResult.forEach((res) => {
       if (res.type === 'unchanged') {
-        // Рекурсивно проверяем вложенные структуры, если это объекты/массивы
-        if (typeof res.item === 'object' && res.item !== null) {
-          // Нам нужно заново запустить сравнение для вложенных структур,
-          // так как они могут быть "одинаковыми" по верхнему уровню, но иметь отличия внутри
-          // Хотя LCS.diff с isEqual уже гарантирует полное равенство.
-          stats.unchanged++;
-          changes.push({ type: 'unchanged', path: `${path}/${res.indexB}` });
-        } else {
-          stats.unchanged++;
-          changes.push({ type: 'unchanged', path: `${path}/${res.indexB}` });
-        }
+        pushChange('unchanged', childPath(path, res.indexB), undefined, undefined, childDisplayPath(displayPath, res.indexB));
       } else if (res.type === 'added') {
-        stats.added++;
-        changes.push({ type: 'added', path: `${path}/${res.indexB}`, newValue: res.item });
-        patch.push({ op: 'add', path: `${path}/${res.indexB}`, value: res.item });
+        const currentPath = childPath(path, res.indexB);
+        pushChange('added', currentPath, undefined, res.item, childDisplayPath(displayPath, res.indexB));
+        addPatch({ op: 'add', path: currentPath, value: res.item });
       } else if (res.type === 'removed') {
-        stats.removed++;
-        changes.push({ type: 'removed', path: `${path}/${res.indexA + offset}`, oldValue: res.item });
-        patch.push({ op: 'remove', path: `${path}/${res.indexA + offset}` });
+        const currentPath = childPath(path, res.indexA + offset);
+        pushChange('removed', currentPath, res.item, undefined, childDisplayPath(displayPath, res.indexA));
+        addPatch({ op: 'remove', path: currentPath });
         offset--;
       }
     });
-  }
+  };
 
-  /**
-   * Сравнение массивов без учета порядка.
-   */
-  function compareArraysUnordered(a: JsonArray, b: JsonArray, path: string) {
-    // Упрощенная логика: считаем количество вхождений каждого элемента.
-    // Для сложных объектов это может быть дорого.
+  const compareArraysUnordered = (a: JsonArray, b: JsonArray, path: string, displayPath: string) => {
     const usedIndicesB = new Set<number>();
 
     a.forEach((itemA, indexA) => {
-      const currentPathA = `${path}/${indexA}`;
       let found = false;
-
       for (let indexB = 0; indexB < b.length; indexB++) {
-        if (!usedIndicesB.has(indexB) && isEqual(itemA, b[indexB]!, ignoreTypeDiff)) {
+        if (!usedIndicesB.has(indexB) && valuesEquivalent(itemA, b[indexB]!, options)) {
           usedIndicesB.add(indexB);
-          stats.unchanged++;
-          changes.push({ type: 'unchanged', path: currentPathA });
+          pushChange('unchanged', childPath(path, indexA), undefined, undefined, childDisplayPath(displayPath, indexA));
           found = true;
           break;
         }
       }
 
       if (!found) {
-        stats.removed++;
-        changes.push({ type: 'removed', path: currentPathA, oldValue: itemA });
-        patch.push({ op: 'remove', path: currentPathA });
+        const currentPath = childPath(path, indexA);
+        pushChange('removed', currentPath, itemA, undefined, childDisplayPath(displayPath, indexA));
+        addPatch({ op: 'remove', path: currentPath });
       }
     });
 
     b.forEach((itemB, indexB) => {
       if (!usedIndicesB.has(indexB)) {
-        stats.added++;
-        const currentPathB = `${path}/${indexB}`; // Это не совсем корректно для patch, но для статистики ок
-        changes.push({ type: 'added', path: currentPathB, newValue: itemB });
-        patch.push({ op: 'add', path: `${path}/-`, value: itemB });
+        const currentPath = childPath(path, indexB);
+        pushChange('added', currentPath, undefined, itemB, childDisplayPath(displayPath, indexB));
+        addPatch({ op: 'add', path: `${path}/-`, value: itemB });
       }
     });
-  }
+  };
 
-  compare(left, right, '');
+  const compareArraysByKey = (a: JsonArray, b: JsonArray, path: string, displayPath: string, key: string) => {
+    const leftByKey = new Map<string, { item: JsonValue; index: number }>();
+    const rightByKey = new Map<string, { item: JsonValue; index: number }>();
+
+    a.forEach((item, index) => {
+      const itemKey = getArrayItemKey(item, key);
+      if (itemKey !== null) leftByKey.set(itemKey, { item, index });
+    });
+    b.forEach((item, index) => {
+      const itemKey = getArrayItemKey(item, key);
+      if (itemKey !== null) rightByKey.set(itemKey, { item, index });
+    });
+
+    const allKeys = [...new Set([...leftByKey.keys(), ...rightByKey.keys()])].sort();
+    allKeys.forEach((itemKey) => {
+      const leftItem = leftByKey.get(itemKey);
+      const rightItem = rightByKey.get(itemKey);
+      const keyedDisplayPath = `${displayPath}[${key}=${itemKey}]`;
+
+      if (!rightItem && leftItem) {
+        const currentPath = childPath(path, leftItem.index);
+        pushChange('removed', currentPath, leftItem.item, undefined, keyedDisplayPath);
+        addPatch({ op: 'remove', path: currentPath });
+        return;
+      }
+
+      if (!leftItem && rightItem) {
+        const currentPath = childPath(path, rightItem.index);
+        pushChange('added', currentPath, undefined, rightItem.item, keyedDisplayPath);
+        addPatch({ op: 'add', path: currentPath, value: rightItem.item });
+        return;
+      }
+
+      if (leftItem && rightItem) {
+        compare(leftItem.item, rightItem.item, childPath(path, rightItem.index), keyedDisplayPath);
+      }
+    });
+  };
+
+  compare(left, right, '', '');
 
   return {
     changes,
     stats,
-    patch
+    riskSummary: changes.length < maxDetailedChanges && includeUnchanged ? buildRiskSummary(changes) : riskSummary,
+    pathSummary: changes.length < maxDetailedChanges && includeUnchanged ? buildPathSummary(changes) : pathGroupsToSummary(pathGroups),
+    patch,
   };
-}
-
-/**
- * Глубокое сравнение на равенство.
- */
-function isEqual(a: JsonValue, b: JsonValue, ignoreTypeDiff: boolean): boolean {
-  if (a === b) return true;
-
-  if (ignoreTypeDiff) {
-    if (a == b && typeof a !== 'object' && typeof b !== 'object') return true;
-  }
-
-  if (typeof a !== typeof b) return false;
-  if (a === null || b === null) return a === b;
-
-  if (Array.isArray(a)) {
-    if (!Array.isArray(b) || a.length !== b.length) return false;
-    for (let i = 0; i < a.length; i++) {
-      if (!isEqual(a[i]!, b[i]!, ignoreTypeDiff)) return false;
-    }
-    return true;
-  }
-
-  if (isJsonObject(a) && isJsonObject(b)) {
-    const keysA = Object.keys(a);
-    const keysB = Object.keys(b);
-    if (keysA.length !== keysB.length) return false;
-    for (const key of keysA) {
-      if (!keysB.includes(key) || !isEqual(a[key]!, b[key]!, ignoreTypeDiff)) return false;
-    }
-    return true;
-  }
-
-  return false;
 }
 
 export default diffJson;

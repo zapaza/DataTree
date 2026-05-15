@@ -24,32 +24,25 @@
       <div class="flex-1 overflow-y-auto py-4">
         <!-- Navigation -->
         <div class="px-4 mb-6">
-          <h3 class="text-[10px] font-bold uppercase text-light tracking-widest mb-2 px-2">Navigation</h3>
+          <h3 class="text-[10px] font-bold uppercase text-light tracking-widest mb-2 px-2">{{ t('sidebar.navigation') }}</h3>
           <div class="space-y-1">
             <router-link
-              to="/"
-              class="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-secondary text-base transition-colors"
-              exact-active-class="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold"
-              @click="$emit('close')"
-            >
-              <div class="i-carbon-edit text-xl" />
-              <span>Editor</span>
-            </router-link>
-            <router-link
-              to="/diff"
+              v-for="mode in productModes"
+              :key="mode.id"
+              :to="mode.path"
               class="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-secondary text-base transition-colors"
               active-class="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold"
               @click="$emit('close')"
             >
-              <div class="i-carbon-compare text-xl" />
-              <span>Diff</span>
+              <div :class="mode.icon" class="text-xl" />
+              <span>{{ t(mode.labelKey) }}</span>
             </router-link>
           </div>
         </div>
 
         <!-- Tools -->
         <div class="px-4 mb-6">
-          <h3 class="text-[10px] font-bold uppercase text-light tracking-widest mb-2 px-2">Tools & Data</h3>
+          <h3 class="text-[10px] font-bold uppercase text-light tracking-widest mb-2 px-2">{{ t('sidebar.toolsData') }}</h3>
           <div class="space-y-1">
             <button
               v-for="item in actionItems"
@@ -58,7 +51,7 @@
               @click="emitAction(item.emit)"
             >
               <div :class="item.icon" class="text-xl text-blue-500" />
-              <span class="font-medium">{{ item.label }}</span>
+              <span class="font-medium">{{ t(item.labelKey) }}</span>
             </button>
           </div>
         </div>
@@ -71,7 +64,7 @@
         >
           <div class="i-carbon-sun dark:hidden text-xl" />
           <div class="i-carbon-moon hidden dark:block text-xl text-blue-400" />
-          <span>Switch Theme</span>
+          <span>{{ t('sidebar.switchTheme') }}</span>
         </button>
       </div>
     </div>
@@ -79,21 +72,29 @@
 </template>
 
 <script setup lang="ts">
-type TMenuEmit = 'toggle-examples' | 'toggle-history' | 'toggle-settings';
+import { PRODUCT_MODES } from '@/config/product-modes';
+import useI18n from '@/composables/useI18n';
+
+type TMenuEmit = 'toggle-examples' | 'toggle-history' | 'toggle-settings' | 'toggle-inspect-tools';
 
 const emit = defineEmits<{
   close: [];
   'toggle-examples': [];
+  'toggle-inspect-tools': [];
   'toggle-history': [];
   'toggle-settings': [];
   'toggle-theme': [];
 }>();
 
-const actionItems: Array<{ id: string; icon: string; label: string; emit: TMenuEmit }> = [
-  { id: 'examples', icon: 'i-carbon-template', label: 'Examples', emit: 'toggle-examples' },
-  { id: 'history', icon: 'i-carbon-time', label: 'History', emit: 'toggle-history' },
-  { id: 'settings', icon: 'i-carbon-settings', label: 'Settings', emit: 'toggle-settings' },
+const { t } = useI18n();
+
+const actionItems: Array<{ id: string; icon: string; labelKey: string; emit: TMenuEmit }> = [
+  { id: 'examples', icon: 'i-carbon-template', labelKey: 'sidebar.examples', emit: 'toggle-examples' },
+  { id: 'inspect-tools', icon: 'i-carbon-data-view-alt', labelKey: 'sidebar.sidePanels', emit: 'toggle-inspect-tools' },
+  { id: 'history', icon: 'i-carbon-time', labelKey: 'sidebar.history', emit: 'toggle-history' },
+  { id: 'settings', icon: 'i-carbon-settings', labelKey: 'sidebar.settings', emit: 'toggle-settings' },
 ];
+const productModes = PRODUCT_MODES;
 
 const emitAction = (eventName: TMenuEmit) => {
   switch (eventName) {
@@ -102,6 +103,9 @@ const emitAction = (eventName: TMenuEmit) => {
       break;
     case 'toggle-history':
       emit('toggle-history');
+      break;
+    case 'toggle-inspect-tools':
+      emit('toggle-inspect-tools');
       break;
     case 'toggle-settings':
       emit('toggle-settings');

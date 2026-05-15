@@ -1,16 +1,18 @@
-import { useAppStore } from '../stores/appStore';
+import { useDocumentStore } from '../stores/documentStore';
 import FileUtils from '../utils/file-utils';
 import useClipboard from './useClipboard';
+import useI18n from './useI18n';
 
 export default function useFileHandler() {
-  const appStore = useAppStore();
+  const documentStore = useDocumentStore();
   const { showToast } = useClipboard();
+  const { t } = useI18n();
   const MAX_FILE_SIZE_MB = 10;
 
   const handleImport = async (file: File) => {
     // 1. Проверка размера
     if (!FileUtils.checkFileSize(file, MAX_FILE_SIZE_MB)) {
-      showToast(`File is too large. Maximum size is ${MAX_FILE_SIZE_MB}MB.`, 'error');
+      showToast(t('file.tooLarge', { size: MAX_FILE_SIZE_MB }), 'error');
       return;
     }
 
@@ -21,37 +23,36 @@ export default function useFileHandler() {
       // 3. Определение формата по расширению
       const format = FileUtils.getFormatByExtension(file.name);
       if (format) {
-        appStore.setFormat(format);
+        documentStore.setFormat(format);
       }
 
       // 4. Установка контента
-      appStore.setRawInput(content);
-      appStore.parseInput();
+      documentStore.setRawInput(content);
 
-      showToast(`File "${file.name}" imported successfully`, 'success');
+      showToast(t('file.imported', { name: file.name }), 'success');
     } catch (error) {
-      showToast('Failed to read file', 'error');
+      showToast(t('file.readFailed'), 'error');
       console.error(error);
     }
   };
 
   const handleExport = () => {
-    const content = appStore.rawInput;
+    const content = documentStore.rawInput;
     if (!content) {
-      showToast('Nothing to export', 'error');
+      showToast(t('file.nothingToExport'), 'error');
       return;
     }
 
-    const format = appStore.format;
+    const format = documentStore.format;
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
     const fileName = `datatree-export-${timestamp}.${format}`;
     const mimeType = format === 'json' ? 'application/json' : 'application/xml';
 
     try {
       FileUtils.saveFile(content, fileName, mimeType);
-      showToast(`Exported as ${fileName}`, 'success');
+      showToast(t('file.exported', { name: fileName }), 'success');
     } catch (error) {
-      showToast('Failed to export file', 'error');
+      showToast(t('file.exportFailed'), 'error');
       console.error(error);
     }
   };

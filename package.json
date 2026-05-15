@@ -2,6 +2,7 @@
   "name": "datatree",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
@@ -13,11 +14,17 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "test:unit": "vitest",
+    "test:unit:run": "vitest --run",
+    "test:performance": "vitest --run src/__tests__/performance.spec.ts",
+    "test:smoke": "vitest --run src/__tests__/e2e-smoke.spec.ts src/__tests__/pwa.spec.ts",
     "lint": "eslint . --cache",
     "lint:fix": "eslint . --fix --cache",
-    "format": "prettier --write --experimental-cli src"
+    "format": "prettier --write --experimental-cli src",
+    "quality": "run-s type-check lint test:unit:run build"
   },
   "dependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "fast-xml-parser": "5.7.0",
     "jsonc-parser": "^3.3.1",
     "monaco-editor": "^0.55.1",

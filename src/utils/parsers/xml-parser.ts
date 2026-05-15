@@ -13,7 +13,7 @@ export default class XmlParser {
     parseAttributeValue: true,
     parseTagValue: true,
     trimValues: true,
-    processEntities: true,
+    processEntities: false,
     ignoreDeclaration: false,
   });
 

@@ -23,12 +23,19 @@ describe('PathUtils', () => {
   });
 
   it('should handle keys with spaces and special characters', () => {
-    const complexPath = 'root.data.first name.last-name';
-    // Current implementation just joins with dots, which is acceptable for simple visualization
-    // but we should verify it doesn't crash
-    expect(PathUtils.getNodePath(complexPath, 'js')).toBe('data.first name.last-name');
-    expect(PathUtils.getNodePath(complexPath, 'jsonpath')).toBe('$.data.first name.last-name');
-    expect(PathUtils.getNodePath(complexPath, 'xpath')).toBe('/data/first name/last-name');
+    const complexPath = ['data.set', 'first name', 'last-name', 'email@work'];
+
+    expect(PathUtils.getNodePath(complexPath, 'js')).toBe('["data.set"]["first name"]["last-name"]["email@work"]');
+    expect(PathUtils.getNodePath(complexPath, 'jsonpath')).toBe("$['data.set']['first name']['last-name']['email@work']");
+    expect(PathUtils.getNodePath(complexPath, 'xpath')).toBe('/data.set/*[name()="first name"]/last-name/*[name()="email@work"]');
+  });
+
+  it('should keep array indexes in escaped paths', () => {
+    const path = ['users', '[0]', 'profile.name'];
+
+    expect(PathUtils.getNodePath(path, 'js')).toBe('users[0]["profile.name"]');
+    expect(PathUtils.getNodePath(path, 'jsonpath')).toBe("$.users[0]['profile.name']");
+    expect(PathUtils.getNodePath(path, 'xpath')).toBe('/users/*[1]/profile.name');
   });
 
   it('should format values correctly', () => {

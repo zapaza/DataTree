@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import TreeTransformer from '../tree-transformer';
 import type { TTreeNode } from '@/types/store';
+import type { JsonObject } from '@/types/json';
 
 describe('TreeTransformer', () => {
   it('should transform a simple object', () => {
@@ -48,5 +49,19 @@ describe('TreeTransformer', () => {
 
     expect(TreeTransformer.countNodes(tree)).toBe(3);
     expect(TreeTransformer.countNodes(null)).toBe(0);
+  });
+
+  it('handles deeply nested objects without recursive stack overflow', () => {
+    const data: JsonObject = {};
+    let cursor = data;
+    for (let index = 0; index < 1500; index++) {
+      const next: JsonObject = {};
+      cursor.next = next;
+      cursor = next;
+    }
+
+    const tree = TreeTransformer.transform(data);
+
+    expect(TreeTransformer.countNodes(tree)).toBe(1501);
   });
 });

@@ -36,9 +36,14 @@ export default function useSettings() {
     root.style.setProperty('--tree-indent', `${settingsStore.settings.tree.indentSize}px`);
   };
 
+  const applyLocale = () => {
+    document.documentElement.lang = settingsStore.settings.locale;
+  };
+
   onMounted(() => {
     applyTheme(settingsStore.settings.theme);
     applyTreeSettings();
+    applyLocale();
   });
 
   // Следим за изменением темы
@@ -51,8 +56,13 @@ export default function useSettings() {
     applyTreeSettings();
   });
 
+  watch(() => settingsStore.settings.locale, () => {
+    applyLocale();
+  });
+
   return {
     applyTheme,
-    applyTreeSettings
+    applyTreeSettings,
+    applyLocale
   };
 }

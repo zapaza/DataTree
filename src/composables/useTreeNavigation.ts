@@ -1,5 +1,5 @@
 import { type Ref, onMounted, onUnmounted } from 'vue';
-import { useAppStore } from '../stores/appStore';
+import { useDocumentStore } from '../stores/documentStore';
 import { useTreeStore } from '../stores/treeStore';
 import { TreeTraversal } from '../utils/tree-traversal';
 import type { TVirtualNode } from '@/composables/useVirtualTree';
@@ -11,7 +11,7 @@ export function useTreeNavigation(
     nodes?: Ref<TVirtualNode[]>;
   } = {}
 ) {
-  const appStore = useAppStore();
+  const documentStore = useDocumentStore();
   const treeStore = useTreeStore();
 
   const scrollToNode = (path: string) => {
@@ -35,7 +35,7 @@ export function useTreeNavigation(
       return;
     }
 
-    const visibleNodes = options.nodes?.value || TreeTraversal.getVisibleNodes(appStore.filteredData, treeStore.expandedNodes);
+    const visibleNodes = options.nodes?.value || TreeTraversal.getVisibleNodes(documentStore.filteredData, treeStore.expandedNodes);
     if (visibleNodes.length === 0) return;
 
     const currentIndex = visibleNodes.findIndex(n => n.path === treeStore.selectedPath);

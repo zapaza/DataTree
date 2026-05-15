@@ -76,6 +76,9 @@ const createEditorOptions = (value: string, format: string): monaco.editor.IStan
   ...editorOptions.value,
   value,
   language: format,
+  largeFileOptimizations: true,
+  formatOnPaste: false,
+  formatOnType: false,
 });
 
 onMounted(async () => {
@@ -193,10 +196,18 @@ const updateHiddenAreas = () => {
     return;
   }
 
+  const HIDDEN_AREAS_CHANGE_LIMIT = 500;
+  const changedOnly = diffStore.diffResult?.changes.filter(change => change.type !== 'unchanged') ?? [];
+  if (changedOnly.length > HIDDEN_AREAS_CHANGE_LIMIT) {
+    (leftEditor as unknown as THiddenAreasEditor).setHiddenAreas([]);
+    (rightEditor as unknown as THiddenAreasEditor).setHiddenAreas([]);
+    return;
+  }
+
   const changedLinesLeft = new Set<number>();
   const changedLinesRight = new Set<number>();
 
-  diffStore.diffResult?.changes.forEach(diff => {
+  changedOnly.forEach(diff => {
     if (diff.type === 'removed' || diff.type === 'modified') {
       const model = leftEditor?.getModel();
       if (model) {
@@ -274,7 +285,7 @@ watch(() => diffStore.right.error, (newErr) => {
 // Watch for diff results change
 watch(() => diffStore.diffResult, () => {
   throttledUpdateDecorations();
-}, { deep: true });
+});
 
 // Watch for showOnlyChanges prop
 watch(() => props.showOnlyChanges, () => {

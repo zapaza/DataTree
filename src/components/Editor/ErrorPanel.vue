@@ -10,13 +10,13 @@
                 {{ error.message }}
               </p>
               <div class="flex items-center gap-3 text-[10px] text-red-700 dark:text-red-400 font-mono font-semibold">
-                <span>Line: {{ error.line }}, Col: {{ error.column }}</span>
+                <span>{{ t('editor.line') }}: {{ error.line }}, {{ t('editor.column') }}: {{ error.column }}</span>
                 <button
                   class="hover:underline flex items-center gap-1"
-                  @click="copyError(`${error.message} (Line: ${error.line}, Col: ${error.column})`)"
+                  @click="copyError(`${error.message} (${t('editor.line')}: ${error.line}, ${t('editor.column')}: ${error.column})`)"
                 >
                   <div class="i-carbon-copy" />
-                  Copy error
+                  {{ t('editor.copyError') }}
                 </button>
               </div>
               <div v-if="error.snippet" class="mt-2 p-1.5 bg-white/50 dark:bg-black/30 border border-red-200 dark:border-red-900 rounded font-mono text-[11px] text-red-950 dark:text-red-50 shadow-inner overflow-x-auto">
@@ -42,12 +42,14 @@
 <script setup lang="ts">
 import useErrorHandler from '@/composables/useErrorHandler';
 import useClipboard from '@/composables/useClipboard';
+import { useI18n } from '@/composables/useI18n';
 
 const { enhancedErrors, applyFix } = useErrorHandler();
 const { copy } = useClipboard();
+const { t } = useI18n();
 
 const copyError = (msg: string) => {
-  copy(msg, 'Error message copied to clipboard');
+  copy(msg, t('editor.errorCopied'));
 };
 </script>
 

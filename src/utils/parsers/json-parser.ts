@@ -35,41 +35,224 @@ export default class SafeJsonParser {
   public static fix(json: string): string {
     let fixed = json.trim();
     if (!fixed) return json;
+    if (this.canParse(fixed)) return fixed;
 
-    // 1. Пропущенные кавычки у ключей
-    fixed = fixed.replace(/([{,]\s*)([a-zA-Z0-9_$]+)(\s*:)/g, '$1"$2"$3');
-    fixed = fixed.replace(/([{,]\s*)'([a-zA-Z0-9_$]+)'(\s*:)/g, '$1"$2"$3');
+    fixed = this.normalizeKeysAndDelimiters(fixed);
+    fixed = this.closeDanglingStrings(fixed);
+    fixed = this.removeTrailingCommas(fixed);
+    fixed = this.balanceBrackets(fixed);
+    fixed = this.removeTrailingCommas(fixed);
 
-    // 2. Исправление незакрытых кавычек (построчно)
-    // Это помогает корректно обрабатывать кавычки перед структурными символами
-    const lines = fixed.split('\n');
-    const fixedLines = lines.map(line => {
-      const trimmed = line.trim();
-      const quoteCount = (line.match(/"/g) || []).length;
+    return fixed;
+  }
 
-      if (quoteCount % 2 !== 0) {
-        if (trimmed.endsWith(',')) {
-          return line.replace(/,(\s*)$/, '"$1,');
-        } else if (trimmed.endsWith('}')) {
-          return line.replace(/\}(\s*)$/, '"}$1');
-        } else if (trimmed.endsWith(']')) {
-          return line.replace(/\](\s*)$/, '"]$1');
-        } else if (!trimmed.endsWith('{') && !trimmed.endsWith('[')) {
-          return line + '"';
+  private static canParse(json: string): boolean {
+    try {
+      JSON.parse(json);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private static lastSignificantChar(output: string): string {
+    for (let i = output.length - 1; i >= 0; i--) {
+      const char = output[i];
+      if (char && !/\s/.test(char)) return char;
+    }
+    return '';
+  }
+
+  private static readIdentifier(input: string, start: number): { value: string; end: number } {
+    let end = start;
+    while (end < input.length && /[\w$]/.test(input[end] ?? '')) {
+      end++;
+    }
+    return { value: input.slice(start, end), end };
+  }
+
+  private static findNextSignificant(input: string, start: number): { char: string; index: number } {
+    let index = start;
+    while (index < input.length && /\s/.test(input[index] ?? '')) {
+      index++;
+    }
+    return { char: input[index] ?? '', index };
+  }
+
+  private static normalizeKeysAndDelimiters(input: string): string {
+    let output = '';
+    let index = 0;
+    let inString = false;
+    let escaped = false;
+
+    while (index < input.length) {
+      const char = input[index] ?? '';
+
+      if (inString) {
+        output += char;
+        if (escaped) {
+          escaped = false;
+        } else if (char === '\\') {
+          escaped = true;
+        } else if (char === '"') {
+          inString = false;
+        }
+        index++;
+        continue;
+      }
+
+      if (char === '"') {
+        output += char;
+        inString = true;
+        index++;
+        continue;
+      }
+
+      const previous = this.lastSignificantChar(output);
+      const canStartKey = previous === '{' || previous === ',';
+
+      if (canStartKey && /[A-Za-z_$]/.test(char)) {
+        const identifier = this.readIdentifier(input, index);
+        const next = this.findNextSignificant(input, identifier.end);
+        if (next.char === ':') {
+          output += `"${identifier.value}"`;
+          index = identifier.end;
+          continue;
         }
       }
-      return line;
-    });
-    fixed = fixedLines.join('\n');
 
-    // 3. Глобальный проход для скобок и точек с запятой
+      if (canStartKey && char === "'") {
+        let end = index + 1;
+        let key = '';
+        let keyEscaped = false;
+        while (end < input.length) {
+          const current = input[end] ?? '';
+          if (keyEscaped) {
+            key += current;
+            keyEscaped = false;
+          } else if (current === '\\') {
+            keyEscaped = true;
+          } else if (current === "'") {
+            break;
+          } else {
+            key += current;
+          }
+          end++;
+        }
+
+        const next = this.findNextSignificant(input, end + 1);
+        if (end < input.length && next.char === ':') {
+          output += JSON.stringify(key);
+          index = end + 1;
+          continue;
+        }
+      }
+
+      output += char === ';' ? ',' : char;
+      index++;
+    }
+
+    return output;
+  }
+
+  private static closeDanglingStrings(input: string): string {
+    let output = '';
+    let inString = false;
+    let escaped = false;
+
+    for (let index = 0; index < input.length; index++) {
+      const char = input[index] ?? '';
+
+      if (!inString) {
+        output += char;
+        if (char === '"') {
+          inString = true;
+          escaped = false;
+        }
+        continue;
+      }
+
+      if (escaped) {
+        output += char;
+        escaped = false;
+        continue;
+      }
+
+      if (char === '\\') {
+        output += char;
+        escaped = true;
+        continue;
+      }
+
+      if (char === '"') {
+        output += char;
+        inString = false;
+        continue;
+      }
+
+      if (char === '\n') {
+        output = output.replace(/,(\s*)$/, '"$1,');
+        if (!output.endsWith(',')) output += '"';
+        output += char;
+        inString = false;
+        continue;
+      }
+
+      if ((char === '}' || char === ']') && input.slice(index + 1).trim() === '') {
+        output += `"${char}`;
+        inString = false;
+        continue;
+      }
+
+      output += char;
+    }
+
+    if (inString) output += '"';
+
+    return output;
+  }
+
+  private static removeTrailingCommas(input: string): string {
+    let output = '';
+    let inString = false;
+    let escaped = false;
+
+    for (let index = 0; index < input.length; index++) {
+      const char = input[index] ?? '';
+
+      if (inString) {
+        output += char;
+        if (escaped) escaped = false;
+        else if (char === '\\') escaped = true;
+        else if (char === '"') inString = false;
+        continue;
+      }
+
+      if (char === '"') {
+        output += char;
+        inString = true;
+        continue;
+      }
+
+      if (char === ',') {
+        const next = this.findNextSignificant(input, index + 1);
+        if (next.char === '}' || next.char === ']') continue;
+      }
+
+      output += char;
+    }
+
+    return output;
+  }
+
+  private static balanceBrackets(input: string): string {
     let result = '';
     const stack: ('}' | ']')[] = [];
     let inString = false;
     let escaped = false;
 
-    for (let i = 0; i < fixed.length; i++) {
-      const char = fixed[i];
+    for (let i = 0; i < input.length; i++) {
+      const char = input[i];
 
       if (inString) {
         if (escaped) {
@@ -109,8 +292,6 @@ export default class SafeJsonParser {
           stack.pop();
         }
         result += char;
-      } else if (char === ';') {
-        result += ','; // Исправляем ; на ,
       } else {
         result += char;
       }
@@ -124,9 +305,6 @@ export default class SafeJsonParser {
     while (stack.length > 0) {
       result += stack.pop();
     }
-
-    // 4. Удаляем лишние запятые перед закрывающими скобками
-    result = result.replace(/,\s*([\]}])/g, '$1');
 
     return result;
   }

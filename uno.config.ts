@@ -9,6 +9,15 @@ import {
 } from 'unocss'
 
 export default defineConfig({
+  safelist: [
+    'i-carbon-tree-view',
+    'i-carbon-rule',
+    'i-carbon-compare',
+    'i-carbon-arrows-horizontal',
+    'i-carbon-security',
+    'i-carbon-wifi-off',
+    'i-carbon-cloud-offline',
+  ],
   shortcuts: [
     ['bg-base', 'bg-white dark:bg-[#1c1c1e]'],
     ['bg-secondary', 'bg-gray-50/70 dark:bg-[#232325]'],

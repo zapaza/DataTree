@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import SafeJsonParser from '../utils/parsers/json-parser';
 import TreeTransformer from '../utils/tree-transformer';
 import StatisticsCalculator from '../utils/statistics';
+import { analyzeSmartInsights } from '../utils/smart-insights';
+import { executeQuery } from '../utils/query-extract';
 
 describe('Performance Tests', () => {
   it('should parse and transform 10MB JSON in reasonable time', () => {
@@ -80,5 +82,34 @@ describe('Performance Tests', () => {
     expect(stats.depth).toBe(depth + 2); // transformer root + depth levels + leaf
 
     console.log(`Deep nesting (${depth} levels) duration: ${(transformEnd - transformStart).toFixed(2)} ms`);
+  });
+
+  it('should analyze insights and query large payloads without UI-scale delays', () => {
+    const payload = {
+      users: Array.from({ length: 5000 }, (_, index) => ({
+        id: index % 2500,
+        email: `user${index}@example.com`,
+        token: `token-${index}`,
+        createdAt: '2026-05-14T08:00:00Z',
+        flags: index % 10 === 0 ? [] : ['active'],
+      })),
+    };
+    const tree = TreeTransformer.transform(payload);
+
+    const insightsStart = performance.now();
+    const insights = analyzeSmartInsights(tree);
+    const insightsDuration = performance.now() - insightsStart;
+
+    expect(insights.suspiciousFields.length).toBeGreaterThan(1000);
+    expect(insights.duplicateIds.length).toBeGreaterThan(0);
+    expect(insightsDuration).toBeLessThan(1500);
+
+    const queryStart = performance.now();
+    const result = executeQuery(tree, 'json', '$.users[*].email');
+    const queryDuration = performance.now() - queryStart;
+
+    expect(result.success).toBe(true);
+    expect(result.results).toHaveLength(5000);
+    expect(queryDuration).toBeLessThan(1000);
   });
 });

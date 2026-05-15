@@ -1,4 +1,7 @@
 import type { TDataType } from '@/types/editor';
+import type { TProductMode } from '@/config/product-modes';
+
+export type THistoryOperationType = 'autosave' | 'import' | 'format' | 'transform' | 'validate' | 'compare' | 'restore';
 
 export interface THistoryItem {
   id?: number;
@@ -7,11 +10,13 @@ export interface THistoryItem {
   format: TDataType;
   isValid: boolean;
   nodesCount: number;
+  mode: TProductMode;
+  operationType: THistoryOperationType;
 }
 
 const DB_NAME = 'DataTreeHistoryDB';
 const STORE_NAME = 'history';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 export class HistoryDB {
   private db: IDBDatabase | null = null;
@@ -72,13 +77,19 @@ export class HistoryDB {
     const db = await this.init();
     const toDelete = items.slice(limit);
 
-    const transaction = db.transaction([STORE_NAME], 'readwrite');
-    const store = transaction.objectStore(STORE_NAME);
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
 
-    toDelete.forEach(item => {
-      if (item.id !== undefined) {
-        store.delete(item.id);
-      }
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+      transaction.onabort = () => reject(transaction.error);
+
+      toDelete.forEach(item => {
+        if (item.id !== undefined) {
+          store.delete(item.id);
+        }
+      });
     });
   }
 
