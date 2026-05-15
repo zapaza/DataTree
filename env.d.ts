@@ -9,4 +9,3 @@ declare module 'monaco-editor/esm/vs/editor/edcore.main.js' {
 }
 
 declare const __APP_VERSION__: string;
-declare const __APP_STAGE__: string;

@@ -2,7 +2,7 @@
 
 [English version](./README.md)
 
-![Версия](https://img.shields.io/badge/version-0.1.0-blue)
+![Версия](https://img.shields.io/badge/version-1.0.0-blue)
 ![Vue](https://img.shields.io/badge/vue-3.5-green)
 ![Приватность](https://img.shields.io/badge/privacy-local--only-success)
 ![Лицензия](https://img.shields.io/badge/license-MIT-lightgrey)
