@@ -1,12 +1,9 @@
-import {
-  defineConfig,
-  presetAttributify,
-  presetIcons,
-  presetTypography,
-  presetWind4,
-  transformerDirectives,
-  transformerVariantGroup,
-} from 'unocss'
+import { defineConfig } from '@unocss/vite'
+import { presetIcons } from '@unocss/preset-icons'
+import { presetTypography } from '@unocss/preset-typography'
+import { presetWind4 } from '@unocss/preset-wind4'
+import transformerDirectives from '@unocss/transformer-directives'
+import transformerVariantGroup from '@unocss/transformer-variant-group'
 
 export default defineConfig({
   safelist: [
@@ -37,7 +34,6 @@ export default defineConfig({
   },
   presets: [
     presetWind4(),
-    presetAttributify(),
     presetIcons({
       scale: 1.2,
       warn: true,
